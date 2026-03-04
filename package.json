@@ -1,0 +1,15 @@
+{
+  "name": "changeist-search",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "next": "14.2.5"
+  }
+}
