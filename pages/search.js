@@ -1,13 +1,16 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Head from 'next/head';
 
 const API_KEY = process.env.NEXT_PUBLIC_INTERNAL_EMBED_KEY || 'changeist-internal';
 
 export default function SearchPage() {
+  const [mounted, setMounted] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [activeType, setActiveType] = useState('');
   const [status, setStatus] = useState('idle'); // idle | loading | done | error
+
+  useEffect(() => { setMounted(true); }, []);
 
   const doSearch = useCallback(async (q, type) => {
     if (!q.trim()) return;
@@ -33,6 +36,8 @@ export default function SearchPage() {
     setActiveType(type);
     if (query) doSearch(query, type);
   };
+
+  if (!mounted) return null;
 
   return (
     <>
