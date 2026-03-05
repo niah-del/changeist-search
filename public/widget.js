@@ -200,7 +200,8 @@
       function inlineFormat(str) {
         return escapeHtml(str)
           .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
-          .replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+          .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+          .replace(/ ✓/g, ' <span class="cg-verified">Verified</span>');
       }
 
       // Process a segment that may contain [title](url) links + bold/italic

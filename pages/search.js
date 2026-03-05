@@ -63,7 +63,7 @@ export default function SearchPage() {
         .card:hover { border-color: #2563eb; box-shadow: 0 4px 12px rgba(37,99,235,.1); transform: translateY(-1px); }
         .card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
         .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; letter-spacing: .03em; text-transform: uppercase; }
-        .badge-internal { background: #dbeafe; color: #1d4ed8; }
+        .badge-internal { background: #fce7f0; color: #be185d; }
         .badge-sponsored { background: #fef3c7; color: #92400e; }
         .badge-web { background: #f3f4f6; color: #6b7280; }
         .type-pill { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 999px; background: #f0fdf4; color: #166534; font-weight: 500; }

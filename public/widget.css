@@ -187,8 +187,8 @@
 }
 
 .cg-badge--internal {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #fce7f0;
+  color: #be185d;
 }
 
 .cg-badge--sponsored {
@@ -202,8 +202,21 @@
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-badge--internal {
-  background: #1e3a8a;
-  color: #93c5fd;
+  background: #5c0e2e;
+  color: #f9a8cf;
+}
+
+/* --- Verified pill (inline in chat messages) --- */
+.cg-verified {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fce7f0;
+  color: #be185d;
+  vertical-align: middle;
+  line-height: 1.6;
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-badge--sponsored {
