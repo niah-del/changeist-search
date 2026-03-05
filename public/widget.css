@@ -351,6 +351,87 @@
    Chat Widget Styles
    ============================================================ */
 
+/* --- Welcome screen (Gemini-style landing) --- */
+.cg-welcome {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.cg-chat:not(.cg-chat--welcome) .cg-welcome {
+  display: none;
+}
+
+.cg-chat--welcome .cg-messages {
+  display: none;
+}
+
+.cg-welcome-inner {
+  max-width: 580px;
+  width: 100%;
+}
+
+.cg-welcome-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.cg-welcome-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.cg-welcome-hi {
+  font-size: 26px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+#changeist-search[data-cg-theme="dark"] .cg-welcome-hi {
+  color: #e8eaed;
+}
+
+.cg-welcome-headline {
+  font-size: 38px;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0 0 16px;
+  color: #111;
+}
+
+#changeist-search[data-cg-theme="dark"] .cg-welcome-headline {
+  background: linear-gradient(135deg, #ed1869 0%, #ff8c42 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.cg-welcome-sub {
+  font-size: 17px;
+  line-height: 1.65;
+  color: #555;
+  margin: 0;
+}
+
+#changeist-search[data-cg-theme="dark"] .cg-welcome-sub {
+  color: #9aa0a6;
+}
+
+@media (max-width: 480px) {
+  .cg-welcome-headline { font-size: 26px; }
+  .cg-welcome-hi { font-size: 20px; }
+  .cg-welcome-logo { width: 34px; height: 34px; }
+  .cg-welcome-sub { font-size: 15px; }
+}
+
 /* --- Chat container --- */
 .cg-chat {
   display: flex;

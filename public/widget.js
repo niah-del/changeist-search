@@ -70,7 +70,17 @@
 
     // --- Build the chat widget HTML ---
     container.innerHTML =
-      '<div class="cg-widget cg-chat">' +
+      '<div class="cg-widget cg-chat cg-chat--welcome">' +
+        '<div class="cg-welcome">' +
+          '<div class="cg-welcome-inner">' +
+            '<div class="cg-welcome-brand">' +
+              '<img class="cg-welcome-logo" src="' + escapeAttr(API_BASE) + '/changeist-mark.png" alt="Changeist" />' +
+              '<span class="cg-welcome-hi">Hi friend!</span>' +
+            '</div>' +
+            '<p class="cg-welcome-headline">Ready to get involved? 🌟</p>' +
+            '<p class="cg-welcome-sub">I can help you find amazing internships, volunteer gigs, and local events. Drop your city and interests below to see what\'s happening near you!</p>' +
+          '</div>' +
+        '</div>' +
         '<div class="cg-messages" role="log" aria-live="polite" aria-label="Conversation"></div>' +
         '<div class="cg-chat-form-wrap">' +
           '<form class="cg-chat-form" role="form">' +
@@ -86,6 +96,8 @@
         '</div>' +
       '</div>';
 
+    var chatEl = container.querySelector('.cg-chat');
+    var welcomeEl = container.querySelector('.cg-welcome');
     var form = container.querySelector('.cg-chat-form');
     var input = container.querySelector('.cg-chat-input');
     var messagesEl = container.querySelector('.cg-messages');
@@ -94,12 +106,6 @@
     // Conversation history (sent to API on each turn)
     var messages = [];
     var isLoading = false;
-
-    // --- Show welcome message (display-only, not pushed to messages[]) ---
-    appendAssistantMessage(
-      'Hi! I\'m here to help you find volunteer opportunities, jobs, internships, and events. ' +
-      'Tell me what you\'re interested in — and where you\'re based if location matters!'
-    );
 
     // --- Form submit ---
     form.addEventListener('submit', function (e) {
@@ -114,6 +120,12 @@
     function sendMessage(userText) {
       isLoading = true;
       sendBtn.disabled = true;
+
+      // Transition from welcome screen to chat on first message
+      if (chatEl.classList.contains('cg-chat--welcome')) {
+        chatEl.classList.remove('cg-chat--welcome');
+        welcomeEl.style.display = 'none';
+      }
 
       messages.push({ role: 'user', content: userText });
       appendUserMessage(userText);
