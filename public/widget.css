@@ -656,6 +656,47 @@
   cursor: not-allowed;
 }
 
+/* --- Copy button on assistant messages --- */
+.cg-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  padding: 4px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.cg-copy-btn:hover {
+  color: #4b5563;
+  border-color: #9ca3af;
+}
+
+.cg-copy-btn--done {
+  color: #be185d;
+  border-color: #be185d;
+}
+
+#changeist-search[data-cg-theme="dark"] .cg-copy-btn {
+  border-color: #3c4043;
+  color: #5f6368;
+}
+
+#changeist-search[data-cg-theme="dark"] .cg-copy-btn:hover {
+  color: #9aa0a6;
+  border-color: #5f6368;
+}
+
+#changeist-search[data-cg-theme="dark"] .cg-copy-btn--done {
+  color: #ed1869;
+  border-color: #ed1869;
+}
+
 .cg-chat-btn-logo {
   width: 30px;
   height: 30px;
