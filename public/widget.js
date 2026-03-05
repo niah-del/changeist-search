@@ -72,11 +72,9 @@
     container.innerHTML =
       '<div class="cg-widget cg-chat cg-chat--welcome">' +
         '<div class="cg-welcome">' +
+          '<img class="cg-welcome-logo" src="' + escapeAttr(API_BASE) + '/changeist-mark.png" alt="Changeist" />' +
           '<div class="cg-welcome-inner">' +
-            '<div class="cg-welcome-brand">' +
-              '<img class="cg-welcome-logo" src="' + escapeAttr(API_BASE) + '/changeist-mark.png" alt="Changeist" />' +
-              '<span class="cg-welcome-hi">Hi friend!</span>' +
-            '</div>' +
+            '<p class="cg-welcome-hi">Hi friend!</p>' +
             '<p class="cg-welcome-headline">Ready to get involved? 🌟</p>' +
             '<p class="cg-welcome-sub">I can help you find amazing internships, volunteer gigs, and local events. Drop your city and interests below to see what\'s happening near you!</p>' +
           '</div>' +

@@ -354,6 +354,7 @@
 /* --- Welcome screen (Gemini-style landing) --- */
 .cg-welcome {
   flex: 1;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -370,29 +371,25 @@
   display: none;
 }
 
-.cg-welcome-inner {
-  max-width: 580px;
-  width: 100%;
-}
-
-.cg-welcome-brand {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  margin-bottom: 20px;
-}
-
 .cg-welcome-logo {
+  position: absolute;
+  top: 20px;
+  right: 24px;
   width: 132px;
   height: 132px;
   object-fit: contain;
+}
+
+.cg-welcome-inner {
+  max-width: 580px;
+  width: 100%;
 }
 
 .cg-welcome-hi {
   font-size: 26px;
   font-weight: 500;
   color: #1a1a1a;
+  margin: 0 0 12px;
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-welcome-hi {
@@ -408,7 +405,7 @@
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-welcome-headline {
-  background: linear-gradient(135deg, #ed1869 0%, #ff8c42 100%);
+  background: linear-gradient(135deg, #ed1869 0%, #edc618 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -428,7 +425,7 @@
 @media (max-width: 480px) {
   .cg-welcome-headline { font-size: 26px; }
   .cg-welcome-hi { font-size: 20px; }
-  .cg-welcome-logo { width: 100px; height: 100px; }
+  .cg-welcome-logo { width: 80px; height: 80px; top: 12px; right: 12px; }
   .cg-welcome-sub { font-size: 15px; }
 }
 
