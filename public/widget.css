@@ -371,15 +371,6 @@
   display: none;
 }
 
-.cg-welcome-logo {
-  position: absolute;
-  top: 20px;
-  left: 24px;
-  width: 132px;
-  height: 132px;
-  object-fit: contain;
-}
-
 .cg-welcome-inner {
   max-width: 580px;
   width: 100%;
@@ -422,8 +413,7 @@
 @media (max-width: 480px) {
   .cg-welcome-headline { font-size: 26px; }
   .cg-welcome-hi { font-size: 20px; }
-  .cg-welcome-logo { width: 80px; height: 80px; top: 12px; left: 12px; }
-  .cg-welcome-sub { font-size: 15px; }
+.cg-welcome-sub { font-size: 15px; }
 }
 
 /* --- Chat container --- */
@@ -664,6 +654,13 @@
 .cg-chat-btn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+}
+
+.cg-chat-btn-logo {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  display: block;
 }
 
 /* --- Footer --- */

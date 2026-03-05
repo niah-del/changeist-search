@@ -72,7 +72,6 @@
     container.innerHTML =
       '<div class="cg-widget cg-chat cg-chat--welcome">' +
         '<div class="cg-welcome">' +
-          '<img class="cg-welcome-logo" src="' + escapeAttr(API_BASE) + '/changeist-mark.png" alt="Changeist" />' +
           '<div class="cg-welcome-inner">' +
             '<p class="cg-welcome-hi">Hi Friend!</p>' +
             '<p class="cg-welcome-headline">Ready to get involved? 🌟</p>' +
@@ -85,7 +84,7 @@
             '<input class="cg-chat-input" type="text" autocomplete="off" ' +
                    'placeholder="' + escapeAttr(PLACEHOLDER) + '" aria-label="Message" />' +
             '<button class="cg-chat-btn" type="submit" aria-label="Send">' +
-              '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' +
+              '<img src="' + escapeAttr(API_BASE) + '/changeist-mark.png" alt="Send" class="cg-chat-btn-logo" />' +
             '</button>' +
           '</form>' +
         '</div>' +
