@@ -395,6 +395,29 @@
   color: #f0f0f0;
 }
 
+.cg-msg--assistant p {
+  margin: 0 0 6px 0;
+}
+
+.cg-msg--assistant p:last-child {
+  margin-bottom: 0;
+}
+
+.cg-msg--assistant ol,
+.cg-msg--assistant ul {
+  margin: 6px 0;
+  padding-left: 20px;
+}
+
+.cg-msg--assistant li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.cg-msg--assistant li:last-child {
+  margin-bottom: 0;
+}
+
 .cg-msg--assistant a {
   color: #2563eb;
   text-decoration: underline;

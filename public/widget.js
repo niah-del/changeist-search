@@ -194,19 +194,62 @@
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
-    // --- Convert [title](url) Markdown links to safe HTML ---
-    // Splits text on link patterns, escapes plain text segments,
-    // validates URLs start with http/https to block javascript: injection.
+    // --- Markdown renderer: handles links, bold, italic, numbered + bullet lists ---
     function markdownLinksToHtml(text) {
-      var parts = text.split(/(\[[^\]]+\]\(https?:\/\/[^)]+\))/g);
-      return parts.map(function (part) {
-        var m = part.match(/^\[([^\]]+)\]\((https?:\/\/[^)]+)\)$/);
-        if (m) {
-          return '<a href="' + escapeAttr(m[2]) + '" target="_blank" rel="noopener">' +
-                 escapeHtml(m[1]) + '</a>';
+      // Process inline formatting within a single text segment (no links)
+      function inlineFormat(str) {
+        return escapeHtml(str)
+          .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+      }
+
+      // Process a segment that may contain [title](url) links + bold/italic
+      function processSegment(str) {
+        var parts = str.split(/(\*{0,2}\[[^\]]+\]\(https?:\/\/[^)]+\)\*{0,2})/g);
+        return parts.map(function (part) {
+          // Match optional ** wrapping around a markdown link
+          var m = part.match(/^(\*{0,2})\[([^\]]+)\]\((https?:\/\/[^)]+)\)(\*{0,2})$/);
+          if (m) {
+            var bold = m[1].length === 2 || m[4].length === 2;
+            var inner = escapeHtml(m[2]);
+            var link = '<a href="' + escapeAttr(m[3]) + '" target="_blank" rel="noopener">' +
+                       (bold ? '<strong>' + inner + '</strong>' : inner) + '</a>';
+            return link;
+          }
+          return inlineFormat(part);
+        }).join('');
+      }
+
+      var lines = text.split('\n');
+      var html = '';
+      var inUl = false, inOl = false;
+
+      lines.forEach(function (line) {
+        var ulM = line.match(/^[\-\*] (.+)/);
+        var olM = line.match(/^\d+\. (.+)/);
+
+        if (ulM) {
+          if (inOl) { html += '</ol>'; inOl = false; }
+          if (!inUl) { html += '<ul>'; inUl = true; }
+          html += '<li>' + processSegment(ulM[1]) + '</li>';
+        } else if (olM) {
+          if (inUl) { html += '</ul>'; inUl = false; }
+          if (!inOl) { html += '<ol>'; inOl = true; }
+          html += '<li>' + processSegment(olM[1]) + '</li>';
+        } else {
+          if (inUl) { html += '</ul>'; inUl = false; }
+          if (inOl) { html += '</ol>'; inOl = false; }
+          if (line.trim() === '') {
+            html += '<br>';
+          } else {
+            html += '<p>' + processSegment(line) + '</p>';
+          }
         }
-        return escapeHtml(part).replace(/\n/g, '<br>');
-      }).join('');
+      });
+
+      if (inUl) html += '</ul>';
+      if (inOl) html += '</ol>';
+      return html;
     }
 
     // --- Utilities ---
