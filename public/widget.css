@@ -405,11 +405,7 @@
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-welcome-headline {
-  background: linear-gradient(135deg, #ed1869 0%, #edc618 100%);
-  background: linear-gradient(in oklch 135deg, #ed1869, #edc618);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ed1689;
 }
 
 .cg-welcome-sub {
