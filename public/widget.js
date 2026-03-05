@@ -236,14 +236,14 @@
           if (inUl) { html += '</ul>'; inUl = false; }
           if (!inOl) { html += '<ol>'; inOl = true; }
           html += '<li>' + processSegment(olM[1]) + '</li>';
+        } else if (line.trim() === '') {
+          // blank line inside a list = skip (keeps numbering continuous)
+          // blank line outside a list = spacer
+          if (!inUl && !inOl) html += '<br>';
         } else {
           if (inUl) { html += '</ul>'; inUl = false; }
           if (inOl) { html += '</ol>'; inOl = false; }
-          if (line.trim() === '') {
-            html += '<br>';
-          } else {
-            html += '<p>' + processSegment(line) + '</p>';
-          }
+          html += '<p>' + processSegment(line) + '</p>';
         }
       });
 

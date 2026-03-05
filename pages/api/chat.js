@@ -10,7 +10,7 @@ When the user tells you what they're looking for, use the search_opportunities t
 
 1. One short punchy opening line reacting to their search — keep it real, human, and warm (a light emoji is welcome)
 2. A numbered list of 3–5 top picks in this format:
-   **[Opportunity Name](url)**
+   **[Opportunity Name](url)** — Organization Name
    *Why you'd love it:* One sentence on what makes this a great fit for them specifically.
 3. A short, friendly closing line — invite them to refine the search or ask about something else.
 

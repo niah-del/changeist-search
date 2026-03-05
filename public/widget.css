@@ -438,12 +438,12 @@
 .cg-msg--assistant a:hover { color: #1d4ed8; }
 
 #changeist-search[data-cg-theme="dark"] .cg-msg--assistant a {
-  color: #8ab4f8;
+  color: #ed1869;
   text-decoration: none;
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-msg--assistant a:hover {
-  color: #aecbfa;
+  color: #f54d8e;
   text-decoration: underline;
 }
 
@@ -478,7 +478,7 @@
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-dot {
-  background: #8ab4f8;
+  background: #ed1869;
 }
 
 .cg-dot:nth-child(1) { animation-delay: 0s; }
