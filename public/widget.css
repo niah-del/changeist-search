@@ -442,7 +442,7 @@
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-chat {
-  background: #120902;
+  background: #111111;
   border: none;
   border-radius: 0;
   box-shadow: none;
@@ -599,7 +599,7 @@
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-chat-form-wrap {
-  background: #120902;
+  background: #111111;
   border-top: 1px solid #3c4043;
 }
 
@@ -677,7 +677,7 @@
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-footer {
-  background: #120902;
+  background: #111111;
   border-top: none;
 }
 
