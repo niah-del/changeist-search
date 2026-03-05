@@ -8,9 +8,14 @@
   font-size: 16px;
   color: #1a1a1a;
   -webkit-font-smoothing: antialiased;
-  height: 100vh;
+  /* Break out of Squarespace's centered content wrapper */
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  /* Fill viewport below the nav (adjust 80px if your nav is taller/shorter) */
+  height: calc(100vh - 80px);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 #changeist-search[data-cg-theme="dark"] {
@@ -19,11 +24,12 @@
 
 .cg-widget {
   width: 100%;
-  max-width: 800px;
+  max-width: 860px;
   margin: 0 auto;
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* --- Search form --- */
@@ -362,7 +368,7 @@
 #changeist-search[data-cg-theme="dark"] .cg-chat {
   background: #131314;
   border: none;
-  border-radius: 16px;
+  border-radius: 0;
   box-shadow: none;
 }
 
