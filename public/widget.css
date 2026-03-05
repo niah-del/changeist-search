@@ -384,8 +384,8 @@
 }
 
 .cg-welcome-logo {
-  width: 44px;
-  height: 44px;
+  width: 132px;
+  height: 132px;
   object-fit: contain;
 }
 
@@ -428,7 +428,7 @@
 @media (max-width: 480px) {
   .cg-welcome-headline { font-size: 26px; }
   .cg-welcome-hi { font-size: 20px; }
-  .cg-welcome-logo { width: 34px; height: 34px; }
+  .cg-welcome-logo { width: 100px; height: 100px; }
   .cg-welcome-sub { font-size: 15px; }
 }
 
