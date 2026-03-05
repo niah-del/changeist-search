@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { supabase } from '../../lib/supabase';
 import { searchOpportunities } from '../../lib/search';
+import { googleSearch } from '../../lib/google-search';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -22,7 +23,8 @@ Formatting rules:
 - Keep each entry tight: one title link + one "why" sentence — no walls of text
 - If the user is vague (no topic or no location when it would clearly help), ask ONE specific, friendly question before searching
 - If no results are found, be honest and fun about it — suggest trying different keywords or a broader search
-- Never output raw JSON or bare URLs`;
+- Never output raw JSON or bare URLs
+- When a user asks follow-up questions about a specific opportunity or organization (e.g. "tell me more", "what do they do", "how do I apply"), use the research_organization tool to look it up and give a real, informed answer`;
 
 const tools = [
   {
@@ -42,6 +44,22 @@ const tools = [
           type: 'string',
           enum: ['volunteer', 'job', 'internship', 'event', ''],
           description: 'Filter by opportunity type. Leave empty to search all types.',
+        },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'research_organization',
+    description:
+      'Look up information about a specific organization or opportunity to answer follow-up questions. ' +
+      'Use this when a user asks "tell me more", "what do they do", "how do I apply", or similar questions about a listing.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Search query about the organization or opportunity, e.g. "Best Friends Animal Society Los Angeles volunteer" or "SPCA LA how to apply"',
         },
       },
       required: ['query'],
@@ -95,7 +113,9 @@ export default async function handler(req, res) {
 
       const toolResults = [];
       for (const block of response.content) {
-        if (block.type === 'tool_use' && block.name === 'search_opportunities') {
+        if (block.type !== 'tool_use') continue;
+
+        if (block.name === 'search_opportunities') {
           const results = await searchOpportunities({
             query: block.input.query,
             type: block.input.type || '',
@@ -104,6 +124,16 @@ export default async function handler(req, res) {
             type: 'tool_result',
             tool_use_id: block.id,
             content: JSON.stringify(results.slice(0, 8)),
+          });
+        } else if (block.name === 'research_organization') {
+          const results = await googleSearch(block.input.query, 5, '');
+          const summary = results.map(r =>
+            `${r.title}\n${r.url}\n${r.description || ''}`
+          ).join('\n\n');
+          toolResults.push({
+            type: 'tool_result',
+            tool_use_id: block.id,
+            content: summary || 'No results found.',
           });
         }
       }
