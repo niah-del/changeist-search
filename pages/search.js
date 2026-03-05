@@ -127,7 +127,7 @@ export default function SearchPage() {
           <a key={r.id || i} className="card" href={r.url || '#'} target="_blank" rel="noopener noreferrer">
             <div className="card-header">
               <span className={`badge badge-${r.source}`}>
-                {r.source === 'internal' ? 'Changeist' : r.source === 'sponsored' ? 'Sponsored' : 'Web'}
+                {r.source === 'internal' ? '✓ Verified' : r.source === 'sponsored' ? 'Sponsored' : 'Web'}
               </span>
               {r.type && <span className="type-pill">{r.type.charAt(0).toUpperCase() + r.type.slice(1)}</span>}
               {r.location && <span className="location">📍 {r.location}</span>}
