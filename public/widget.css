@@ -374,7 +374,7 @@
 .cg-welcome-logo {
   position: absolute;
   top: 20px;
-  right: 24px;
+  left: 24px;
   width: 132px;
   height: 132px;
   object-fit: contain;
@@ -419,13 +419,13 @@
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-welcome-sub {
-  color: #e8eaed;
+  color: #ffffff;
 }
 
 @media (max-width: 480px) {
   .cg-welcome-headline { font-size: 26px; }
   .cg-welcome-hi { font-size: 20px; }
-  .cg-welcome-logo { width: 80px; height: 80px; top: 12px; right: 12px; }
+  .cg-welcome-logo { width: 80px; height: 80px; top: 12px; left: 12px; }
   .cg-welcome-sub { font-size: 15px; }
 }
 
@@ -691,7 +691,7 @@
 .cg-powered:hover { color: #2563eb; }
 
 #changeist-search[data-cg-theme="dark"] .cg-powered {
-  color: #5f6368;
+  color: #ffffff;
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-powered:hover {

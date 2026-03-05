@@ -74,7 +74,7 @@
         '<div class="cg-welcome">' +
           '<img class="cg-welcome-logo" src="' + escapeAttr(API_BASE) + '/changeist-mark.png" alt="Changeist" />' +
           '<div class="cg-welcome-inner">' +
-            '<p class="cg-welcome-hi">Hi friend!</p>' +
+            '<p class="cg-welcome-hi">Hi Friend!</p>' +
             '<p class="cg-welcome-headline">Ready to get involved? 🌟</p>' +
             '<p class="cg-welcome-sub">I can help you find amazing internships, volunteer gigs, and local events. Drop your city and interests below to see what\'s happening near you!</p>' +
           '</div>' +
