@@ -73,9 +73,9 @@
       '<div class="cg-widget cg-chat cg-chat--welcome">' +
         '<div class="cg-welcome">' +
           '<div class="cg-welcome-inner">' +
-            '<p class="cg-welcome-hi">Hi Friend!</p>' +
+            '<p class="cg-welcome-hi">Hi Friend! I\'m Link 👋</p>' +
             '<p class="cg-welcome-headline">Ready to get involved? 🌟</p>' +
-            '<p class="cg-welcome-sub">I can help you find amazing internships, volunteer gigs, and local events. Drop your city and interests below to see what\'s happening near you!</p>' +
+            '<p class="cg-welcome-sub">I\'m Changeist\'s AI guide — here to help you find amazing internships, volunteer gigs, and local events. Drop your city and interests below to see what\'s happening near you!</p>' +
           '</div>' +
         '</div>' +
         '<div class="cg-messages" role="log" aria-live="polite" aria-label="Conversation"></div>' +
