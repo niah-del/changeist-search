@@ -35,7 +35,7 @@
   // --- Inject fonts ---
   var fontLink = document.createElement('link');
   fontLink.rel = 'stylesheet';
-  fontLink.href = 'https://fonts.googleapis.com/css2?family=Unica+One&family=Nunito:wght@400;500&display=swap';
+  fontLink.href = 'https://fonts.googleapis.com/css2?family=Unica+One&family=Lato:wght@400;700&display=swap';
   document.head.appendChild(fontLink);
 
   // --- Inject stylesheet ---
