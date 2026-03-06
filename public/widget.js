@@ -35,7 +35,7 @@
   // --- Inject fonts ---
   var fontLink = document.createElement('link');
   fontLink.rel = 'stylesheet';
-  fontLink.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@600&family=Work+Sans:wght@300;400&display=swap';
+  fontLink.href = 'https://fonts.googleapis.com/css2?family=Unica+One&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap';
   document.head.appendChild(fontLink);
 
   // --- Inject stylesheet ---
@@ -79,7 +79,7 @@
       '<div class="cg-widget cg-chat cg-chat--welcome">' +
         '<div class="cg-welcome">' +
           '<div class="cg-welcome-inner">' +
-            '<p class="cg-welcome-hi">🌟 Hi, Friend!</p>' +
+            '<p class="cg-welcome-hi">Hi, Friend!</p>' +
             '<p class="cg-welcome-headline">Ready for your next adventure?</p>' +
             '<p class="cg-welcome-sub">I\'m Link, and I\'m here to help you find amazing internships, volunteer gigs, and local events. Drop your city and interests below to see what\'s happening near you!</p>' +
           '</div>' +
