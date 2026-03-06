@@ -390,10 +390,13 @@
 }
 
 .cg-welcome-hi {
+  font-family: 'Rubik', sans-serif;
   font-size: 44px;
-  font-weight: 400;
+  font-weight: 900;
+  text-transform: uppercase;
   color: #111;
   margin: 0 0 4px;
+  line-height: 1.1;
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-welcome-hi {
@@ -401,9 +404,11 @@
 }
 
 .cg-welcome-headline {
+  font-family: 'Rubik', sans-serif;
   font-size: 44px;
-  font-weight: 400;
-  line-height: 1.15;
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 1.1;
   margin: 0 0 16px;
   color: #111;
 }
