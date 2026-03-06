@@ -351,29 +351,6 @@
    Chat Widget Styles
    ============================================================ */
 
-/* --- 90s decorative perimeter elements --- */
-.cg-deco {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-  z-index: 0;
-}
-
-.cg-deco-item {
-  position: absolute;
-  animation: cg-deco-float 5s ease-in-out infinite;
-}
-
-.cg-deco-d1 { animation-delay: -1.6s; }
-.cg-deco-d2 { animation-delay: -3.1s; }
-.cg-deco-d3 { animation-delay: -0.8s; }
-
-@keyframes cg-deco-float {
-  0%, 100% { translate: 0 0; }
-  50%       { translate: 0 -6px; }
-}
-
 /* --- Welcome screen (Gemini-style landing) --- */
 .cg-welcome {
   flex: none;
