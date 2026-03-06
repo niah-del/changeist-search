@@ -358,11 +358,6 @@
   pointer-events: none;
   overflow: hidden;
   z-index: 0;
-  display: none;
-}
-
-.cg-chat--welcome .cg-deco {
-  display: block;
 }
 
 .cg-deco-item {

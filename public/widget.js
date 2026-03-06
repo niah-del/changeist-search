@@ -78,23 +78,37 @@
     container.innerHTML =
       '<div class="cg-widget cg-chat cg-chat--welcome">' +
         '<div class="cg-deco" aria-hidden="true">' +
-          /* top-left: yellow lightning bolt */
-          '<svg class="cg-deco-item" style="top:22px;left:20px;rotate:-18deg" width="20" height="30" viewBox="0 0 20 30"><polygon points="13,0 4,16 9,16 0,30 16,30 7,14 12,14" fill="#edc618" stroke="#1a1a1a" stroke-width="1.5" stroke-linejoin="round"/></svg>' +
-          /* top-right: pink lightning bolt */
-          '<svg class="cg-deco-item cg-deco-d2" style="top:18px;right:22px;rotate:14deg" width="16" height="24" viewBox="0 0 20 30"><polygon points="13,0 4,16 9,16 0,30 16,30 7,14 12,14" fill="#ed1869" stroke="#1a1a1a" stroke-width="1.5" stroke-linejoin="round"/></svg>' +
-          /* bottom-left: blue lightning bolt */
-          '<svg class="cg-deco-item cg-deco-d1" style="bottom:72px;left:18px;rotate:10deg" width="14" height="21" viewBox="0 0 20 30"><polygon points="13,0 4,16 9,16 0,30 16,30 7,14 12,14" fill="#2eafd7" stroke="#1a1a1a" stroke-width="1.5" stroke-linejoin="round"/></svg>' +
-          /* bottom-right: green lightning bolt */
-          '<svg class="cg-deco-item cg-deco-d3" style="bottom:68px;right:20px;rotate:-12deg" width="14" height="21" viewBox="0 0 20 30"><polygon points="13,0 4,16 9,16 0,30 16,30 7,14 12,14" fill="#73bf44" stroke="#1a1a1a" stroke-width="1.5" stroke-linejoin="round"/></svg>' +
-          /* confetti — top area */
-          '<div class="cg-deco-item cg-deco-d1" style="top:34px;left:52px;width:13px;height:6px;background:#2eafd7;rotate:28deg;border-radius:2px;border:1.5px solid #1a1a1a"></div>' +
-          '<div class="cg-deco-item cg-deco-d3" style="top:26px;right:52px;width:9px;height:9px;background:#73bf44;rotate:40deg;border:1.5px solid #1a1a1a"></div>' +
-          /* streaks — left & right mid */
-          '<div class="cg-deco-item cg-deco-d2" style="top:42%;left:12px;width:30px;height:5px;background:#73bf44;rotate:-30deg;border-radius:3px;border:1.5px solid #1a1a1a"></div>' +
-          '<div class="cg-deco-item cg-deco-d1" style="top:38%;right:10px;width:26px;height:5px;background:#edc618;rotate:25deg;border-radius:3px;border:1.5px solid #1a1a1a"></div>' +
-          /* small dots */
-          '<div class="cg-deco-item cg-deco-d2" style="top:55px;left:16px;width:8px;height:8px;background:#ed1869;border-radius:50%;border:1.5px solid #1a1a1a"></div>' +
-          '<div class="cg-deco-item cg-deco-d3" style="bottom:90px;right:16px;width:7px;height:7px;background:#edc618;border-radius:50%;border:1.5px solid #1a1a1a"></div>' +
+          /* LIGHTNING BOLTS — classic Z-shape, spread around all edges */
+          /* top-left: yellow, large */
+          '<svg class="cg-deco-item" style="top:14px;left:14px;transform:rotate(-20deg)" width="36" height="54" viewBox="0 0 20 30"><polygon points="14,0 3,17 10,17 0,30 17,13 10,13" fill="#edc618" stroke="#1a1a1a" stroke-width="1.5" stroke-linejoin="round"/></svg>' +
+          /* top-right: pink, large */
+          '<svg class="cg-deco-item cg-deco-d2" style="top:12px;right:16px;transform:rotate(18deg)" width="36" height="54" viewBox="0 0 20 30"><polygon points="14,0 3,17 10,17 0,30 17,13 10,13" fill="#ed1869" stroke="#1a1a1a" stroke-width="1.5" stroke-linejoin="round"/></svg>' +
+          /* top-center: blue, medium */
+          '<svg class="cg-deco-item cg-deco-d1" style="top:8px;left:calc(50% - 14px);transform:rotate(-6deg)" width="28" height="42" viewBox="0 0 20 30"><polygon points="14,0 3,17 10,17 0,30 17,13 10,13" fill="#2eafd7" stroke="#1a1a1a" stroke-width="1.5" stroke-linejoin="round"/></svg>' +
+          /* bottom-left: green, large */
+          '<svg class="cg-deco-item cg-deco-d3" style="bottom:82px;left:14px;transform:rotate(16deg)" width="36" height="54" viewBox="0 0 20 30"><polygon points="14,0 3,17 10,17 0,30 17,13 10,13" fill="#73bf44" stroke="#1a1a1a" stroke-width="1.5" stroke-linejoin="round"/></svg>' +
+          /* bottom-right: yellow, large */
+          '<svg class="cg-deco-item cg-deco-d2" style="bottom:80px;right:14px;transform:rotate(-14deg)" width="36" height="54" viewBox="0 0 20 30"><polygon points="14,0 3,17 10,17 0,30 17,13 10,13" fill="#edc618" stroke="#1a1a1a" stroke-width="1.5" stroke-linejoin="round"/></svg>' +
+          /* bottom-center: pink, medium */
+          '<svg class="cg-deco-item cg-deco-d1" style="bottom:78px;left:calc(50% + 30px);transform:rotate(10deg)" width="28" height="42" viewBox="0 0 20 30"><polygon points="14,0 3,17 10,17 0,30 17,13 10,13" fill="#ed1869" stroke="#1a1a1a" stroke-width="1.5" stroke-linejoin="round"/></svg>' +
+          /* left-mid: green, small */
+          '<svg class="cg-deco-item cg-deco-d3" style="top:38%;left:6px;transform:rotate(-8deg)" width="22" height="33" viewBox="0 0 20 30"><polygon points="14,0 3,17 10,17 0,30 17,13 10,13" fill="#73bf44" stroke="#1a1a1a" stroke-width="1.5" stroke-linejoin="round"/></svg>' +
+          /* right-mid: blue, small */
+          '<svg class="cg-deco-item cg-deco-d2" style="top:55%;right:6px;transform:rotate(12deg)" width="22" height="33" viewBox="0 0 20 30"><polygon points="14,0 3,17 10,17 0,30 17,13 10,13" fill="#2eafd7" stroke="#1a1a1a" stroke-width="1.5" stroke-linejoin="round"/></svg>' +
+          /* CONFETTI RECTANGLES */
+          '<div class="cg-deco-item cg-deco-d2" style="top:62px;left:58px;width:20px;height:9px;background:#2eafd7;transform:rotate(32deg);border-radius:2px;border:1.5px solid #1a1a1a"></div>' +
+          '<div class="cg-deco-item cg-deco-d3" style="top:56px;right:64px;width:15px;height:15px;background:#73bf44;transform:rotate(40deg);border:1.5px solid #1a1a1a"></div>' +
+          '<div class="cg-deco-item cg-deco-d1" style="bottom:120px;left:60px;width:18px;height:9px;background:#ed1869;transform:rotate(-28deg);border-radius:2px;border:1.5px solid #1a1a1a"></div>' +
+          '<div class="cg-deco-item cg-deco-d2" style="bottom:116px;right:62px;width:14px;height:14px;background:#edc618;transform:rotate(35deg);border:1.5px solid #1a1a1a"></div>' +
+          /* COLOR STREAKS */
+          '<div class="cg-deco-item cg-deco-d3" style="top:25%;left:6px;width:40px;height:8px;background:#73bf44;transform:rotate(-32deg);border-radius:3px;border:1.5px solid #1a1a1a"></div>' +
+          '<div class="cg-deco-item cg-deco-d1" style="top:22%;right:6px;width:34px;height:8px;background:#edc618;transform:rotate(28deg);border-radius:3px;border:1.5px solid #1a1a1a"></div>' +
+          '<div class="cg-deco-item cg-deco-d2" style="top:70%;left:8px;width:30px;height:7px;background:#2eafd7;transform:rotate(25deg);border-radius:3px;border:1.5px solid #1a1a1a"></div>' +
+          '<div class="cg-deco-item cg-deco-d3" style="top:74%;right:8px;width:32px;height:7px;background:#ed1869;transform:rotate(-22deg);border-radius:3px;border:1.5px solid #1a1a1a"></div>' +
+          /* DOTS */
+          '<div class="cg-deco-item cg-deco-d1" style="top:92px;left:12px;width:12px;height:12px;background:#ed1869;border-radius:50%;border:1.5px solid #1a1a1a"></div>' +
+          '<div class="cg-deco-item cg-deco-d2" style="top:86px;right:12px;width:11px;height:11px;background:#2eafd7;border-radius:50%;border:1.5px solid #1a1a1a"></div>' +
+          '<div class="cg-deco-item cg-deco-d3" style="bottom:148px;left:8px;width:10px;height:10px;background:#edc618;border-radius:50%;border:1.5px solid #1a1a1a"></div>' +
         '</div>' +
         '<div class="cg-welcome">' +
           '<div class="cg-welcome-inner">' +
