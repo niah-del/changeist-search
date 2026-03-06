@@ -193,7 +193,7 @@
   padding: 3px 8px;
   border-radius: 999px;
   letter-spacing: 0.03em;
-  text-transform: uppercase;
+
 }
 
 .cg-badge--internal {
@@ -393,7 +393,7 @@
   font-family: 'Fugaz One', sans-serif;
   font-size: 30px;
   font-weight: 400;
-  text-transform: uppercase;
+
   color: #111;
   margin: 0 0 4px;
   line-height: 1.1;
@@ -407,7 +407,7 @@
   font-family: 'Fugaz One', sans-serif;
   font-size: 30px;
   font-weight: 400;
-  text-transform: uppercase;
+
   line-height: 1.1;
   white-space: nowrap;
   margin: 0 0 16px;
