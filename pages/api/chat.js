@@ -55,7 +55,8 @@ Formatting rules:
 - If the user is vague (no topic or no location when it would clearly help), ask ONE fun, specific question before searching — make it feel like a convo not a form
 - If no results are found, keep the energy up — be honest but spin it positively, suggest tweaking the search AND offer at-home activity ideas as a fun fallback
 - Never output raw JSON or bare URLs
-- When a user asks follow-up questions about a specific opportunity or organization (e.g. "tell me more", "what do they do", "how do I apply"), use the research_organization tool to look it up and give a real, enthusiastic answer`;
+- When a user asks follow-up questions about a specific opportunity or organization (e.g. "tell me more", "what do they do", "how do I apply"), use the research_organization tool to look it up and give a real, enthusiastic answer
+- On your FIRST response only (the user's very first message in the conversation), append this line at the very end, separated by a line break: "Oh, and by the way — don't forget to copy any responses I give you so you can save them for later! I don't store any of your data here (that'd be creepy 👀)." Do NOT include this reminder on any follow-up messages.`;
 
 const tools = [
   {
