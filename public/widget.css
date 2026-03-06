@@ -389,11 +389,22 @@
   width: 100%;
 }
 
+.cg-welcome-hi {
+  font-size: 20px;
+  font-weight: 400;
+  color: #444;
+  margin: 0 0 10px;
+}
+
+#changeist-search[data-cg-theme="dark"] .cg-welcome-hi {
+  color: #9aa0a6;
+}
+
 .cg-welcome-headline {
-  font-size: 46px;
-  font-weight: 700;
+  font-size: 44px;
+  font-weight: 400;
   line-height: 1.15;
-  margin: 0 0 14px;
+  margin: 0 0 16px;
   color: #111;
 }
 
@@ -405,16 +416,17 @@
   font-size: 16px;
   font-weight: 400;
   line-height: 1.6;
-  color: #6b7280;
+  color: #111;
   margin: 0;
   max-width: 560px;
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-welcome-sub {
-  color: #9aa0a6;
+  color: #e8eaed;
 }
 
 @media (max-width: 480px) {
+  .cg-welcome-hi { font-size: 17px; }
   .cg-welcome-headline { font-size: 28px; }
   .cg-welcome-sub { font-size: 15px; }
 }

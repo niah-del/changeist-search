@@ -73,7 +73,8 @@
       '<div class="cg-widget cg-chat cg-chat--welcome">' +
         '<div class="cg-welcome">' +
           '<div class="cg-welcome-inner">' +
-            '<p class="cg-welcome-headline">Hi, Friend! 🌟<br>Ready for your next adventure?</p>' +
+            '<p class="cg-welcome-hi">🌟 Hi, Friend!</p>' +
+            '<p class="cg-welcome-headline">Ready for your next adventure?</p>' +
             '<p class="cg-welcome-sub">I\'m Link, and I\'m here to help you find amazing internships, volunteer gigs, and local events. Drop your city and interests below to see what\'s happening near you!</p>' +
           '</div>' +
         '</div>' +
