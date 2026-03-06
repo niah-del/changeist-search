@@ -541,12 +541,12 @@
 }
 
 .cg-msg--assistant a {
-  color: #2563eb;
+  color: #ed1869;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-.cg-msg--assistant a:hover { color: #1d4ed8; }
+.cg-msg--assistant a:hover { color: #c4145a; }
 
 #changeist-search[data-cg-theme="dark"] .cg-msg--assistant a {
   color: #ed1869;
