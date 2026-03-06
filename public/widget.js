@@ -35,7 +35,7 @@
   // --- Inject fonts ---
   var fontLink = document.createElement('link');
   fontLink.rel = 'stylesheet';
-  fontLink.href = 'https://fonts.googleapis.com/css2?family=Unica+One&family=Crimson+Text:wght@400;600&display=swap';
+  fontLink.href = 'https://fonts.googleapis.com/css2?family=Fugaz+One&family=Work+Sans:wght@300;400&display=swap';
   document.head.appendChild(fontLink);
 
   // --- Inject stylesheet ---
