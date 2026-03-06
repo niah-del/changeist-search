@@ -95,8 +95,10 @@
           '</form>' +
         '</div>' +
         '<div class="cg-footer">' +
-          '<a class="cg-powered" href="https://changeist.org" target="_blank" rel="noopener">Powered by Changeist</a>' +
-          '<a class="cg-learn-more" href="https://www.changeist.org" target="_blank" rel="noopener">Learn more</a>' +
+          '<div class="cg-footer-group">' +
+            '<a class="cg-powered" href="https://changeist.org" target="_blank" rel="noopener">Powered by Changeist</a>' +
+            '<a class="cg-learn-more" href="https://www.changeist.org" target="_blank" rel="noopener">Learn more</a>' +
+          '</div>' +
         '</div>' +
       '</div>';
 
