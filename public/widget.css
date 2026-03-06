@@ -354,13 +354,11 @@
 /* --- Welcome screen (Gemini-style landing) --- */
 .cg-welcome {
   flex: 1;
-  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 24px;
-  text-align: center;
+  justify-content: flex-end;
+  /* Match the same horizontal padding as the input bar so text aligns perfectly */
+  padding: 40px max(16px, calc((100% - 760px) / 2)) 28px;
 }
 
 .cg-chat:not(.cg-chat--welcome) .cg-welcome {
@@ -372,26 +370,14 @@
 }
 
 .cg-welcome-inner {
-  max-width: 580px;
   width: 100%;
 }
 
-.cg-welcome-hi {
-  font-size: 26px;
-  font-weight: 500;
-  color: #1a1a1a;
-  margin: 0 0 12px;
-}
-
-#changeist-search[data-cg-theme="dark"] .cg-welcome-hi {
-  color: #e8eaed;
-}
-
 .cg-welcome-headline {
-  font-size: 38px;
-  font-weight: 600;
-  line-height: 1.2;
-  margin: 0 0 16px;
+  font-size: 46px;
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0 0 14px;
   color: #111;
 }
 
@@ -400,20 +386,21 @@
 }
 
 .cg-welcome-sub {
-  font-size: 17px;
-  line-height: 1.65;
-  color: #555;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #6b7280;
   margin: 0;
+  max-width: 560px;
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-welcome-sub {
-  color: #ffffff;
+  color: #9aa0a6;
 }
 
 @media (max-width: 480px) {
-  .cg-welcome-headline { font-size: 26px; }
-  .cg-welcome-hi { font-size: 20px; }
-.cg-welcome-sub { font-size: 15px; }
+  .cg-welcome-headline { font-size: 28px; }
+  .cg-welcome-sub { font-size: 15px; }
 }
 
 /* --- Chat container --- */
