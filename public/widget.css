@@ -390,9 +390,9 @@
 }
 
 .cg-welcome-hi {
-  font-family: 'Fugaz One', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 30px;
-  font-weight: 400;
+  font-weight: 600;
 
   color: #111;
   margin: 0 0 4px;
@@ -404,9 +404,9 @@
 }
 
 .cg-welcome-headline {
-  font-family: 'Fugaz One', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 30px;
-  font-weight: 400;
+  font-weight: 600;
 
   line-height: 1.1;
   white-space: nowrap;
@@ -419,9 +419,10 @@
 }
 
 .cg-welcome-sub {
-  font-family: 'Work Sans', sans-serif;
-  font-size: 20px;
-  font-weight: 400;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 300;
+  letter-spacing: 0.02em;
   line-height: 1.6;
   color: #111;
   margin: 0;
