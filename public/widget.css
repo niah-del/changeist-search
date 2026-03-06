@@ -500,21 +500,18 @@
   border-radius: 18px;
 }
 
-/* Light: assistant bubble */
+/* Assistant — no bubble, full width, plain text */
 .cg-msg--assistant {
   align-self: flex-start;
-  background: #fff0f4;
-  color: #1a1a1a;
-  border-bottom-left-radius: 4px;
-}
-
-/* Dark: assistant — no bubble, full width, plain text */
-#changeist-search[data-cg-theme="dark"] .cg-msg--assistant {
   background: transparent;
-  color: #e8eaed;
+  color: #1a1a1a;
   max-width: 100%;
   padding: 0 2px;
   border-radius: 0;
+}
+
+#changeist-search[data-cg-theme="dark"] .cg-msg--assistant {
+  color: #e8eaed;
 }
 
 .cg-msg--assistant p {
