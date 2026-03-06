@@ -391,7 +391,7 @@
 
 .cg-welcome-hi {
   font-family: 'Rubik', sans-serif;
-  font-size: 44px;
+  font-size: clamp(22px, 4.2vw, 44px);
   font-weight: 900;
   text-transform: uppercase;
   color: #111;
@@ -405,10 +405,11 @@
 
 .cg-welcome-headline {
   font-family: 'Rubik', sans-serif;
-  font-size: 44px;
+  font-size: clamp(22px, 4.2vw, 44px);
   font-weight: 900;
   text-transform: uppercase;
   line-height: 1.1;
+  white-space: nowrap;
   margin: 0 0 16px;
   color: #111;
 }
@@ -418,8 +419,9 @@
 }
 
 .cg-welcome-sub {
+  font-family: 'Rubik', sans-serif;
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 300;
   line-height: 1.6;
   color: #111;
   margin: 0;
