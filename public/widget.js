@@ -32,10 +32,10 @@
   var API_BASE = scriptTag.getAttribute('data-api-url') ||
     (scriptSrc ? scriptSrc.replace(/\/widget\.js.*$/, '') : '');
 
-  // --- Inject Rubik font ---
+  // --- Inject fonts ---
   var fontLink = document.createElement('link');
   fontLink.rel = 'stylesheet';
-  fontLink.href = 'https://fonts.googleapis.com/css2?family=Rubik:wght@300;900&display=swap';
+  fontLink.href = 'https://fonts.googleapis.com/css2?family=Unica+One&family=Crimson+Text:wght@400;600&display=swap';
   document.head.appendChild(fontLink);
 
   // --- Inject stylesheet ---
