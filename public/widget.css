@@ -390,10 +390,10 @@
 }
 
 .cg-welcome-hi {
-  font-size: 20px;
+  font-size: 44px;
   font-weight: 400;
   color: #444;
-  margin: 0 0 10px;
+  margin: 0 0 4px;
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-welcome-hi {
@@ -426,7 +426,7 @@
 }
 
 @media (max-width: 480px) {
-  .cg-welcome-hi { font-size: 17px; }
+  .cg-welcome-hi { font-size: 28px; }
   .cg-welcome-headline { font-size: 28px; }
   .cg-welcome-sub { font-size: 15px; }
 }
