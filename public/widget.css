@@ -636,7 +636,7 @@
   min-width: 0;
 }
 
-.cg-chat-input::placeholder { color: #c4a0ac; }
+.cg-chat-input::placeholder { color: #6B7280; }
 
 #changeist-search[data-cg-theme="dark"] .cg-chat-input {
   color: #e8eaed;
