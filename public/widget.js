@@ -113,6 +113,24 @@
     var messages = [];
     var isLoading = false;
 
+    // Anonymous session tracking
+    var sessionStartTime = null;
+    var messageCount = 0;
+
+    window.addEventListener('beforeunload', function () {
+      if (sessionStartTime === null || messageCount === 0) return;
+      var duration = Math.round((Date.now() - sessionStartTime) / 1000);
+      var payload = JSON.stringify({
+        key: API_KEY,
+        event_type: 'session_end',
+        duration_seconds: duration,
+        message_count: messageCount,
+      });
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(API_BASE + '/api/events', new Blob([payload], { type: 'application/json' }));
+      }
+    });
+
     // --- Form submit ---
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -132,6 +150,9 @@
         chatEl.classList.remove('cg-chat--welcome');
         welcomeEl.style.display = 'none';
       }
+
+      if (sessionStartTime === null) sessionStartTime = Date.now();
+      messageCount++;
 
       messages.push({ role: 'user', content: userText });
       appendUserMessage(userText);

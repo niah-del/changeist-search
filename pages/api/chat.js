@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { supabase } from '../../lib/supabase';
 import { searchOpportunities } from '../../lib/search';
 import { googleSearch } from '../../lib/google-search';
+import { logEvent, geoFromRequest } from '../../lib/analytics';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -111,6 +112,7 @@ export default async function handler(req, res) {
   const internalKey = process.env.INTERNAL_EMBED_KEY || 'changeist-internal';
   if (!key) return res.status(401).json({ error: 'Missing API key' });
 
+  let embedKeyId = null;
   if (key !== internalKey) {
     const { data: keyRow, error: keyError } = await supabase
       .from('embed_keys')
@@ -121,10 +123,19 @@ export default async function handler(req, res) {
     if (keyError || !keyRow || !keyRow.is_active) {
       return res.status(401).json({ error: 'Invalid or inactive API key' });
     }
+    embedKeyId = keyRow.id;
   }
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'messages array is required' });
+  }
+
+  // Log chat session start on the user's first message
+  if (messages.length === 1) {
+    logEvent('chat_start', {
+      embed_key_id: embedKeyId,
+      ...geoFromRequest(req),
+    });
   }
 
   // Cap history to last 20 messages to control token usage

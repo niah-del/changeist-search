@@ -51,6 +51,34 @@ create table if not exists embed_keys (
 
 
 -- ============================================================
+-- search_events
+-- Anonymous usage metadata. No personal data stored — IP is never saved.
+-- Geo fields (country, region, city) are derived from IP via Vercel headers.
+-- ============================================================
+create table if not exists search_events (
+  id               uuid primary key default uuid_generate_v4(),
+  event_type       text not null,       -- 'search' | 'chat_start' | 'session_end'
+  query            text,                -- search query (search events only)
+  result_count     integer,             -- results returned (search events only)
+  opportunity_type text,                -- type filter: job/volunteer/internship/event
+  message_count    integer,             -- messages sent in session (session_end only)
+  duration_seconds integer,             -- session length in seconds (session_end only)
+  country          text,                -- 2-letter country code, e.g. "US"
+  region           text,                -- region/state code, e.g. "CA"
+  city             text,                -- city name, e.g. "Los Angeles"
+  embed_key_id     uuid references embed_keys(id), -- which partner site (null = Changeist internal)
+  created_at       timestamptz not null default now()
+);
+
+-- Index for time-based queries
+create index if not exists search_events_created on search_events (created_at desc);
+
+-- RLS: service role only
+alter table search_events enable row level security;
+create policy "service only" on search_events for all using (false);
+
+
+-- ============================================================
 -- Row Level Security (optional but recommended)
 -- The API uses the service key, which bypasses RLS.
 -- These policies prevent direct public access via anon key.

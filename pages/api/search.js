@@ -1,5 +1,6 @@
 import { supabase } from '../../lib/supabase';
 import { searchOpportunities } from '../../lib/search';
+import { logEvent, geoFromRequest } from '../../lib/analytics';
 
 /**
  * GET /api/search?q=<query>&key=<embed_key>
@@ -34,6 +35,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Missing API key (key)' });
   }
 
+  let embed_key_id = null;
   if (key !== internalKey) {
     const { data: keyRow, error: keyError } = await supabase
       .from('embed_keys')
@@ -44,9 +46,18 @@ export default async function handler(req, res) {
     if (keyError || !keyRow || !keyRow.is_active) {
       return res.status(401).json({ error: 'Invalid or inactive API key' });
     }
+    embed_key_id = keyRow.id;
   }
 
   const results = await searchOpportunities({ query: q.trim(), type: type || '', location: location || '' });
+
+  logEvent('search', {
+    query: q.trim(),
+    result_count: results.length,
+    opportunity_type: type || null,
+    embed_key_id,
+    ...geoFromRequest(req),
+  });
 
   return res.status(200).json({
     query: q.trim(),
