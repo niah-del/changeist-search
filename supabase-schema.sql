@@ -79,6 +79,27 @@ create policy "service only" on search_events for all using (false);
 
 
 -- ============================================================
+-- reports
+-- Flagged responses submitted by users via the Report button.
+-- ============================================================
+create table if not exists reports (
+  id                uuid primary key default uuid_generate_v4(),
+  user_message      text,                -- the message the user sent before the flagged response
+  assistant_message text,                -- the flagged response from Link
+  embed_key_id      uuid references embed_keys(id),
+  country           text,
+  region            text,
+  city              text,
+  created_at        timestamptz not null default now()
+);
+
+create index if not exists reports_created on reports (created_at desc);
+
+alter table reports enable row level security;
+create policy "service only" on reports for all using (false);
+
+
+-- ============================================================
 -- Row Level Security (optional but recommended)
 -- The API uses the service key, which bypasses RLS.
 -- These policies prevent direct public access via anon key.

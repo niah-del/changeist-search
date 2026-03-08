@@ -24,6 +24,11 @@ const s = {
   dayLabel:   { textAlign: 'center', fontSize: 10, color: '#aaa', marginTop: 4 },
   err:        { color: '#c00', fontSize: 14, marginBottom: 8 },
   stat2:      { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 },
+  reportCard: { background: '#fff5f5', border: '1px solid #fecaca', borderRadius: 10, padding: '16px 20px', marginBottom: 12 },
+  reportMeta: { fontSize: 11, color: '#9ca3af', marginBottom: 8 },
+  reportLabel: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6b7280', marginBottom: 4 },
+  reportText: { fontSize: 13, color: '#1a1a1a', background: '#f9fafb', borderRadius: 6, padding: '8px 12px', marginBottom: 10, whiteSpace: 'pre-wrap', wordBreak: 'break-word' },
+  reportTextFlag: { fontSize: 13, color: '#7f1d1d', background: '#fef2f2', borderRadius: 6, padding: '8px 12px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' },
 };
 
 export default function Dashboard() {
@@ -64,7 +69,7 @@ export default function Dashboard() {
     );
   }
 
-  const { totals, avg_session_duration_seconds, avg_messages_per_session, top_queries, by_country, by_day } = data;
+  const { totals, avg_session_duration_seconds, avg_messages_per_session, top_queries, by_country, by_day, reports } = data;
 
   const maxDay     = Math.max(...(by_day || []).map(d => d.count), 1);
   const maxQuery   = Math.max(...(top_queries || []).map(q => q.count), 1);
@@ -87,7 +92,7 @@ export default function Dashboard() {
         <p style={s.sub}>Last 30 days · Anonymous usage only · No personal data stored</p>
 
         {/* Top stats */}
-        <div style={s.grid}>
+        <div style={{ ...s.grid, gridTemplateColumns: 'repeat(4, 1fr)' }}>
           <div style={s.card}>
             <div style={s.cardLabel}>Searches</div>
             <div style={s.cardNum}>{totals.searches.toLocaleString()}</div>
@@ -100,6 +105,10 @@ export default function Dashboard() {
             <div style={s.cardLabel}>Avg Session</div>
             <div style={s.cardNum}>{fmtDuration(avg_session_duration_seconds)}</div>
             <div style={s.cardLabel}>{avg_messages_per_session != null ? avg_messages_per_session + ' msgs avg' : ''}</div>
+          </div>
+          <div style={{ ...s.card, background: reports && reports.length > 0 ? '#fff5f5' : '#fff', borderColor: reports && reports.length > 0 ? '#fecaca' : 'transparent', border: '1px solid' }}>
+            <div style={s.cardLabel}>Flagged Reports</div>
+            <div style={{ ...s.cardNum, color: reports && reports.length > 0 ? '#b91c1c' : '#1a1a1a' }}>{(reports || []).length}</div>
           </div>
         </div>
 
@@ -144,6 +153,21 @@ export default function Dashboard() {
             ))}
             {(!by_country || by_country.length === 0) && <div style={{ color: '#aaa', fontSize: 14 }}>No data yet</div>}
           </div>
+        </div>
+
+        {/* Flagged reports */}
+        <div style={s.section}>
+          <div style={s.sectionH}>Flagged Reports {reports && reports.length > 0 ? `(${reports.length})` : ''}</div>
+          {(!reports || reports.length === 0) && <div style={{ color: '#aaa', fontSize: 14 }}>No reports yet</div>}
+          {(reports || []).map(r => (
+            <div key={r.id} style={s.reportCard}>
+              <div style={s.reportMeta}>{r.created_at ? new Date(r.created_at).toLocaleString() : ''}{r.country ? ` · ${r.country}` : ''}</div>
+              <div style={s.reportLabel}>User said</div>
+              <div style={s.reportText}>{r.user_message || <em style={{ color: '#aaa' }}>No user message captured</em>}</div>
+              <div style={s.reportLabel}>Link responded</div>
+              <div style={s.reportTextFlag}>{r.assistant_message || <em style={{ color: '#aaa' }}>No response captured</em>}</div>
+            </div>
+          ))}
         </div>
 
         <div style={{ textAlign: 'center', fontSize: 12, color: '#bbb', marginTop: 8 }}>

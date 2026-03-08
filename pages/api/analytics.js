@@ -21,6 +21,7 @@ export default async function handler(req, res) {
     { data: geoRows },
     { data: dayRows },
     { data: sessionRows },
+    { data: reportRows },
   ] = await Promise.all([
     supabase.from('search_events').select('*', { count: 'exact', head: true })
       .eq('event_type', 'search').gte('created_at', since),
@@ -34,6 +35,8 @@ export default async function handler(req, res) {
       .gte('created_at', since),
     supabase.from('search_events').select('duration_seconds, message_count')
       .eq('event_type', 'session_end').gte('created_at', since),
+    supabase.from('reports').select('id, user_message, assistant_message, country, created_at')
+      .order('created_at', { ascending: false }).limit(50),
   ]);
 
   // Top search queries
@@ -82,5 +85,6 @@ export default async function handler(req, res) {
     top_queries,
     by_country,
     by_day,
+    reports:                reportRows || [],
   });
 }

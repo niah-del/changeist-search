@@ -674,12 +674,19 @@
   cursor: not-allowed;
 }
 
-/* --- Copy button on assistant messages --- */
-.cg-copy-btn {
+/* --- Copy / Report buttons on assistant messages --- */
+.cg-msg-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.cg-copy-btn,
+.cg-report-btn {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-top: 10px;
   padding: 4px 10px;
   border: 1px solid #e5e7eb;
   border-radius: 999px;
@@ -700,7 +707,24 @@
   border-color: #be185d;
 }
 
-#changeist-search[data-cg-theme="dark"] .cg-copy-btn {
+.cg-report-btn:hover {
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+
+.cg-report-btn--done {
+  color: #b91c1c;
+  border-color: #fca5a5;
+  cursor: default;
+}
+
+.cg-report-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+#changeist-search[data-cg-theme="dark"] .cg-copy-btn,
+#changeist-search[data-cg-theme="dark"] .cg-report-btn {
   border-color: #3c4043;
   color: #5f6368;
 }
@@ -713,6 +737,12 @@
 #changeist-search[data-cg-theme="dark"] .cg-copy-btn--done {
   color: #ed1869;
   border-color: #ed1869;
+}
+
+#changeist-search[data-cg-theme="dark"] .cg-report-btn:hover,
+#changeist-search[data-cg-theme="dark"] .cg-report-btn--done {
+  color: #f87171;
+  border-color: #f87171;
 }
 
 .cg-chat-btn-logo {

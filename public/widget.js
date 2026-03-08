@@ -196,13 +196,26 @@
     }
 
     function appendAssistantMessage(text) {
+      // Capture the user message that prompted this response
+      var precedingUserMsg = '';
+      for (var i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].role === 'user') { precedingUserMsg = messages[i].content; break; }
+      }
+
       var el = document.createElement('div');
       el.className = 'cg-msg cg-msg--assistant';
       el.innerHTML = markdownLinksToHtml(text) +
-        '<button class="cg-copy-btn" aria-label="Copy message" title="Copy to clipboard">' +
-          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
-          '<span class="cg-copy-label">Copy</span>' +
-        '</button>';
+        '<div class="cg-msg-actions">' +
+          '<button class="cg-copy-btn" aria-label="Copy message" title="Copy to clipboard">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+            '<span class="cg-copy-label">Copy</span>' +
+          '</button>' +
+          '<button class="cg-report-btn" aria-label="Report message" title="Report this response">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>' +
+            '<span class="cg-report-label">Report</span>' +
+          '</button>' +
+        '</div>';
+
       el.querySelector('.cg-copy-btn').addEventListener('click', function () {
         var btn = this;
         var label = btn.querySelector('.cg-copy-label');
@@ -215,6 +228,25 @@
           }, 2000);
         });
       });
+
+      el.querySelector('.cg-report-btn').addEventListener('click', function () {
+        var btn = this;
+        var label = btn.querySelector('.cg-report-label');
+        btn.disabled = true;
+        label.textContent = 'Reporting…';
+        fetch(API_BASE + '/api/report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: API_KEY, user_message: precedingUserMsg, assistant_message: text }),
+        }).then(function (res) {
+          label.textContent = res.ok ? 'Reported' : 'Failed';
+          btn.classList.add('cg-report-btn--done');
+        }).catch(function () {
+          label.textContent = 'Failed';
+          btn.disabled = false;
+        });
+      });
+
       messagesEl.appendChild(el);
       scrollToBottom();
     }
