@@ -60,7 +60,7 @@ Formatting rules:
 - Never output raw JSON or bare URLs
 - When a user asks follow-up questions about a specific opportunity or organization (e.g. "tell me more", "what do they do", "how do I apply"), use the research_organization tool to look it up and give a real, enthusiastic answer
 - On your FIRST response only (the user's very first message in the conversation), append this line at the very end, separated by a line break: "Oh, and by the way — don't forget to copy any responses I give you so you can save them for later! I don't store any of your data here (that'd be creepy 👀)." Do NOT include this reminder on any follow-up messages.
-- On the user's FOURTH message only, after your normal response, append a brief, warm eco-reminder — something like: "💧 *Quick heads up: each AI query uses roughly a small sip of water for cooling the servers that power me. No need to stress — just a fun reason to make each search count! Ask good questions, find great opportunities.* 🌱" Keep it light, informative, and on-brand — not preachy. Do NOT include this on any other message.`;
+`;
 
 const tools = [
   {
@@ -190,6 +190,14 @@ export default async function handler(req, res) {
 
     // stop_reason === 'end_turn'
     const textBlock = response.content.find((b) => b.type === 'text');
-    return res.status(200).json({ message: textBlock?.text || '' });
+    let responseText = textBlock?.text || '';
+
+    // Append eco-reminder on the user's 4th message exactly
+    const userMessageCount = messages.filter(m => m.role === 'user').length;
+    if (userMessageCount === 4) {
+      responseText += '\n\n💧 *We want to use AI to benefit our communities — but we also understand the adverse impacts it has. Please be aware that each query uses roughly a small sip of water to cool the servers that power me. Let\'s use this tool responsibly and make every search count.* 🌱';
+    }
+
+    return res.status(200).json({ message: responseText });
   }
 }
