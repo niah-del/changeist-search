@@ -191,7 +191,7 @@
       el.className = 'cg-msg cg-msg--user';
       el.textContent = text;
       messagesEl.appendChild(el);
-      scrollToBottom();
+      scrollMsgToTop(el);
     }
 
     function appendAssistantMessage(text) {
@@ -203,19 +203,26 @@
 
       var el = document.createElement('div');
       el.className = 'cg-msg cg-msg--assistant';
-      el.innerHTML = markdownLinksToHtml(text) +
-        '<div class="cg-msg-actions">' +
-          '<button class="cg-copy-btn" aria-label="Copy message" title="Copy to clipboard">' +
-            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
-            '<span class="cg-copy-label">Copy</span>' +
-          '</button>' +
-          '<button class="cg-report-btn" aria-label="Report message" title="Report this response">' +
-            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>' +
-            '<span class="cg-report-label">Report</span>' +
-          '</button>' +
-        '</div>';
 
-      el.querySelector('.cg-copy-btn').addEventListener('click', function () {
+      // Separate body element for typewriter animation
+      var bodyEl = document.createElement('div');
+      bodyEl.className = 'cg-msg-body';
+
+      // Action buttons — hidden until typing finishes
+      var actionsEl = document.createElement('div');
+      actionsEl.className = 'cg-msg-actions';
+      actionsEl.style.display = 'none';
+      actionsEl.innerHTML =
+        '<button class="cg-copy-btn" aria-label="Copy message" title="Copy to clipboard">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+          '<span class="cg-copy-label">Copy</span>' +
+        '</button>' +
+        '<button class="cg-report-btn" aria-label="Report message" title="Report this response">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>' +
+          '<span class="cg-report-label">Report</span>' +
+        '</button>';
+
+      actionsEl.querySelector('.cg-copy-btn').addEventListener('click', function () {
         var btn = this;
         var label = btn.querySelector('.cg-copy-label');
         navigator.clipboard.writeText(text).then(function () {
@@ -228,7 +235,7 @@
         });
       });
 
-      el.querySelector('.cg-report-btn').addEventListener('click', function () {
+      actionsEl.querySelector('.cg-report-btn').addEventListener('click', function () {
         var btn = this;
         var label = btn.querySelector('.cg-report-label');
         btn.disabled = true;
@@ -246,8 +253,32 @@
         });
       });
 
+      el.appendChild(bodyEl);
+      el.appendChild(actionsEl);
       messagesEl.appendChild(el);
-      scrollToBottom();
+
+      // Typewriter animation
+      startTypewriter(bodyEl, text, function () {
+        bodyEl.innerHTML = markdownLinksToHtml(text);
+        actionsEl.style.display = '';
+      });
+    }
+
+    function startTypewriter(container, text, onDone) {
+      var totalDuration = Math.min(text.length * 14, 4000);
+      var startTime = null;
+      function frame(ts) {
+        if (!startTime) startTime = ts;
+        var progress = Math.min((ts - startTime) / totalDuration, 1);
+        var charCount = Math.floor(progress * text.length);
+        container.innerHTML = markdownLinksToHtml(text.slice(0, charCount));
+        if (progress < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          onDone();
+        }
+      }
+      requestAnimationFrame(frame);
     }
 
     function appendErrorMessage() {
@@ -268,7 +299,6 @@
         '<span class="cg-dot"></span>' +
         '<span class="cg-dot"></span>';
       messagesEl.appendChild(el);
-      scrollToBottom();
     }
 
     function hideTypingIndicator() {
@@ -278,6 +308,12 @@
 
     function scrollToBottom() {
       messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function scrollMsgToTop(el) {
+      var containerRect = messagesEl.getBoundingClientRect();
+      var elRect = el.getBoundingClientRect();
+      messagesEl.scrollTop += elRect.top - containerRect.top - 16;
     }
 
     // --- Markdown renderer: handles links, bold, italic, numbered + bullet lists ---
