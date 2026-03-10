@@ -125,7 +125,7 @@
       btn.addEventListener('click', function () {
         var key = btn.getAttribute('data-quick');
         if (key === 'brighten') {
-          sendMessage(quickPrompts.brighten);
+          sendMessage(quickPrompts.brighten, 'Brighten my day! ☀️');
         } else {
           input.value = quickPrompts[key];
           input.focus();
@@ -168,7 +168,10 @@
     });
 
     // --- Send a message ---
-    function sendMessage(userText) {
+    // displayText is what the user sees in chat; userText is what's sent to the API.
+    // If displayText is omitted, userText is shown.
+    function sendMessage(userText, displayText) {
+      displayText = displayText || userText;
       isLoading = true;
       sendBtn.disabled = true;
 
@@ -182,7 +185,7 @@
       messageCount++;
 
       messages.push({ role: 'user', content: userText });
-      appendUserMessage(userText);
+      appendUserMessage(displayText);
       showTypingIndicator();
 
       fetch(API_BASE + '/api/chat', {

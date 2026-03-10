@@ -60,6 +60,7 @@ Formatting rules:
 - If no results are found, keep the energy up — be honest but spin it positively, suggest tweaking the search AND offer at-home activity ideas as a fun fallback
 - Never output raw JSON or bare URLs
 - When a user asks follow-up questions about a specific opportunity or organization (e.g. "tell me more", "what do they do", "how do I apply"), use the research_organization tool to look it up and give a real, enthusiastic answer
+- When a user says "brighten my day" or asks for a feel-good/uplifting story, use the research_organization tool to search dogonews.com or timeforkids.com for a recent positive news story (e.g. query: "site:dogonews.com uplifting news 2025"). Share the story enthusiastically — headline, a fun summary, and a link. You MUST use the research_organization tool for this; do not say you can't browse the web.
 - On your FIRST response only (the user's very first message in the conversation), append these two lines at the very end, each separated by a line break:
   1. "Oh, and by the way — don't forget to copy any responses I give you so you can save them for later! I don't store any of your data here (that'd be creepy 👀)."
   2. "📋 *Quick heads up: I'm an AI, so always do your own research before applying to any opportunity — and if you're under 18, loop in a parent or guardian before signing up for anything.*"
@@ -92,8 +93,7 @@ const tools = [
   {
     name: 'research_organization',
     description:
-      'Look up information about a specific organization or opportunity to answer follow-up questions. ' +
-      'Use this when a user asks "tell me more", "what do they do", "how do I apply", or similar questions about a listing.',
+      'Search the web for information. Use this to: (1) look up details about a specific organization or opportunity when a user asks "tell me more", "what do they do", "how do I apply", or similar follow-up questions; (2) search for uplifting or feel-good news stories on sites like dogonews.com or timeforkids.com when the user asks to brighten their day or wants positive news.',
     input_schema: {
       type: 'object',
       properties: {
