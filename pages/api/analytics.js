@@ -34,7 +34,7 @@ export default async function handler(req, res) {
     supabase.from('search_events').select('country, region')
       .gte('created_at', since).not('country', 'is', null),
     supabase.from('search_events').select('city')
-      .eq('country', 'US').gte('created_at', since).not('city', 'is', null),
+      .ilike('country', 'us').gte('created_at', since).not('city', 'is', null),
     supabase.from('search_events').select('created_at, event_type')
       .gte('created_at', since),
     supabase.from('search_events').select('duration_seconds, message_count')
