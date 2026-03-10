@@ -119,7 +119,7 @@
       mindfulness: 'Help me create a short mindfulness plan with activities for grounding and re-energizing.',
       interview:   'Give me interview tips for ',
       resume:      'Give me resume tips for ',
-      brighten:    'Search Dogo News (dogonews.com) or Time for Kids (timeforkids.com) for a recent uplifting or feel-good news story and share it with me in a fun, enthusiastic way!',
+      brighten:    'Search Good News Network (goodnewsnetwork.org) for a recent uplifting or feel-good news story and share it with me in a fun, enthusiastic way!',
     };
     container.querySelectorAll('.cg-quick-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {

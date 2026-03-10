@@ -60,7 +60,7 @@ Formatting rules:
 - If no results are found, keep the energy up — be honest but spin it positively, suggest tweaking the search AND offer at-home activity ideas as a fun fallback
 - Never output raw JSON or bare URLs
 - When a user asks follow-up questions about a specific opportunity or organization (e.g. "tell me more", "what do they do", "how do I apply"), use the research_organization tool to look it up and give a real, enthusiastic answer
-- "Brighten My Day" mode: When the user's message instructs you to search Dogo News (dogonews.com) or Time for Kids (timeforkids.com) for an uplifting story, use the research_organization tool to do exactly that — search one of those two sites and return ONE story only. Share it enthusiastically: story headline as a link, a short fun summary (2–3 sentences max), that's it. Do NOT offer to find more stories or suggest follow-up searches.
+- "Brighten My Day" mode: When the user's message instructs you to search Good News Network (goodnewsnetwork.org) for an uplifting story, use the research_organization tool with the query "site:goodnewsnetwork.org uplifting news" and return ONE story only. Share it enthusiastically: story headline as a link, a short fun summary (2–3 sentences max), that's it. Do NOT offer to find more stories or suggest follow-up searches.
 - Outside of "Brighten My Day" mode: You cannot browse the web for news, current events, or general topics. You do not have access to news sites, search engines, or any live content beyond what your tools provide. If a user asks about news, current events, or anything outside of opportunities and organizations, politely say that's outside what you can help with — and redirect them to what you do best: finding opportunities.
 - On your FIRST response only (the user's very first message in the conversation), append these two lines at the very end, each separated by a line break:
   1. "Oh, and by the way — don't forget to copy any responses I give you so you can save them for later! I don't store any of your data here (that'd be creepy 👀)."
@@ -94,7 +94,7 @@ const tools = [
   {
     name: 'research_organization',
     description:
-      'Search the web for information. Use this to: (1) look up details about a specific organization or opportunity when a user asks "tell me more", "what do they do", "how do I apply", or similar follow-up questions; (2) search for uplifting or feel-good news stories on sites like dogonews.com or timeforkids.com when the user asks to brighten their day or wants positive news.',
+      'Search the web for information. Use this to: (1) look up details about a specific organization or opportunity when a user asks "tell me more", "what do they do", "how do I apply", or similar follow-up questions; (2) search for uplifting or feel-good news stories on goodnewsnetwork.org when the user asks to brighten their day.',
     input_schema: {
       type: 'object',
       properties: {
@@ -107,6 +107,29 @@ const tools = [
     },
   },
 ];
+
+// Raw Serper search — no opportunity-type suffix or job-site exclusions appended.
+// Used for news lookups (Brighten My Day) so site: operators work correctly.
+async function rawSearch(query, maxResults = 5) {
+  const apiKey = process.env.SERPER_API_KEY;
+  if (!apiKey) return [];
+  try {
+    const res = await fetch('https://google.serper.dev/search', {
+      method: 'POST',
+      headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ q: query, num: Math.min(maxResults, 10) }),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.organic || []).map(item => ({
+      title: item.title,
+      url: item.link,
+      description: item.snippet,
+    }));
+  } catch {
+    return [];
+  }
+}
 
 function extractAge(text) {
   const patterns = [
@@ -202,7 +225,11 @@ export default async function handler(req, res) {
             content: JSON.stringify(results.slice(0, 8)),
           });
         } else if (block.name === 'research_organization') {
-          const results = await googleSearch(block.input.query, 5, '');
+          // Use rawSearch for news/site: queries so opportunity terms don't corrupt results
+          const isNewsQuery = block.input.query.includes('goodnewsnetwork.org') || block.input.query.startsWith('site:');
+          const results = isNewsQuery
+            ? await rawSearch(block.input.query, 5)
+            : await googleSearch(block.input.query, 5, '');
           const summary = results.map(r =>
             `${r.title}\n${r.url}\n${r.description || ''}`
           ).join('\n\n');
