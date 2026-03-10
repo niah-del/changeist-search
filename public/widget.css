@@ -462,6 +462,7 @@
 .cg-messages {
   flex: 1;
   overflow-y: auto;
+  position: relative;
   /* Center content column like Gemini — background fills full width */
   padding: 24px max(20px, calc((100% - 760px) / 2)) 12px;
   display: flex;

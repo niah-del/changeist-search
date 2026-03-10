@@ -314,11 +314,9 @@
     }
 
     function scrollMsgToTop(el) {
-      var rect = el.getBoundingClientRect();
-      var containerRect = messagesEl.getBoundingClientRect();
-      var target = messagesEl.scrollTop + (rect.top - containerRect.top) - 24;
+      // .cg-messages has position:relative so el.offsetTop is relative to it
       messagesEl.style.scrollBehavior = 'auto';
-      messagesEl.scrollTop = Math.max(0, target);
+      messagesEl.scrollTop = Math.max(0, el.offsetTop - 24);
       messagesEl.style.scrollBehavior = '';
     }
 
