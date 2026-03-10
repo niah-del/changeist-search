@@ -315,9 +315,13 @@
     }
 
     function scrollMsgToTop(el) {
-      var containerRect = messagesEl.getBoundingClientRect();
-      var elRect = el.getBoundingClientRect();
-      messagesEl.scrollTop += elRect.top - containerRect.top - 16;
+      var top = 0;
+      var node = el;
+      while (node && node !== messagesEl) {
+        top += node.offsetTop;
+        node = node.offsetParent;
+      }
+      messagesEl.scrollTo({ top: Math.max(0, top - 24), behavior: 'smooth' });
     }
 
     // --- Markdown renderer: handles links, bold, italic, numbered + bullet lists ---
