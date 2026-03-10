@@ -19,6 +19,7 @@ export default async function handler(req, res) {
     { count: totalChatStarts },
     { data: queryRows },
     { data: geoRows },
+    { data: usCityRows },
     { data: dayRows },
     { data: sessionRows },
     { data: reportRows },
@@ -31,6 +32,8 @@ export default async function handler(req, res) {
       .eq('event_type', 'search').gte('created_at', since).not('query', 'is', null),
     supabase.from('search_events').select('country, region')
       .gte('created_at', since).not('country', 'is', null),
+    supabase.from('search_events').select('city')
+      .eq('country', 'US').gte('created_at', since).not('city', 'is', null),
     supabase.from('search_events').select('created_at, event_type')
       .gte('created_at', since),
     supabase.from('search_events').select('duration_seconds, message_count')
@@ -48,6 +51,15 @@ export default async function handler(req, res) {
   const top_queries = Object.entries(queryCounts)
     .sort((a, b) => b[1] - a[1]).slice(0, 20)
     .map(([query, count]) => ({ query, count }));
+
+  // US cities
+  const usCityCounts = {};
+  (usCityRows || []).forEach(r => {
+    if (r.city) usCityCounts[r.city] = (usCityCounts[r.city] || 0) + 1;
+  });
+  const us_cities = Object.entries(usCityCounts)
+    .sort((a, b) => b[1] - a[1]).slice(0, 15)
+    .map(([city, count]) => ({ city, count }));
 
   // By country
   const countryCounts = {};
@@ -84,6 +96,7 @@ export default async function handler(req, res) {
     avg_messages_per_session:     avg(msgCounts),
     top_queries,
     by_country,
+    us_cities,
     by_day,
     reports:                reportRows || [],
   });

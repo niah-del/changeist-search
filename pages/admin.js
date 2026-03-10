@@ -69,11 +69,12 @@ export default function Dashboard() {
     );
   }
 
-  const { totals, avg_session_duration_seconds, avg_messages_per_session, top_queries, by_country, by_day, reports } = data;
+  const { totals, avg_session_duration_seconds, avg_messages_per_session, top_queries, by_country, us_cities, by_day, reports } = data;
 
   const maxDay     = Math.max(...(by_day || []).map(d => d.count), 1);
   const maxQuery   = Math.max(...(top_queries || []).map(q => q.count), 1);
   const maxCountry = Math.max(...(by_country || []).map(c => c.count), 1);
+  const maxCity    = Math.max(...(us_cities  || []).map(c => c.count), 1);
 
   function fmtDuration(s) {
     if (!s) return '—';
@@ -154,6 +155,22 @@ export default function Dashboard() {
             {(!by_country || by_country.length === 0) && <div style={{ color: '#aaa', fontSize: 14 }}>No data yet</div>}
           </div>
         </div>
+
+        {/* US cities */}
+        {us_cities && us_cities.length > 0 && (
+          <div style={s.section}>
+            <div style={s.sectionH}>US Cities</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' }}>
+              {us_cities.map(c => (
+                <div key={c.city} style={s.row}>
+                  <div style={s.rowLabel}>{c.city}</div>
+                  <div style={{ ...s.bar, width: Math.max(4, Math.round((c.count / maxCity) * 140)) }} />
+                  <div style={s.rowCount}>{c.count}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Flagged reports */}
         <div style={s.section}>
