@@ -93,7 +93,7 @@ export default function Dashboard() {
         <p style={s.sub}>Last 30 days · Anonymous usage only · No personal data stored</p>
 
         {/* Top stats */}
-        <div style={{ ...s.grid, gridTemplateColumns: 'repeat(4, 1fr)' }}>
+        <div style={{ ...s.grid, gridTemplateColumns: 'repeat(5, 1fr)' }}>
           <div style={s.card}>
             <div style={s.cardLabel}>Searches</div>
             <div style={s.cardNum}>{totals.searches.toLocaleString()}</div>
@@ -103,9 +103,12 @@ export default function Dashboard() {
             <div style={s.cardNum}>{totals.chat_starts.toLocaleString()}</div>
           </div>
           <div style={s.card}>
-            <div style={s.cardLabel}>Avg Session</div>
+            <div style={s.cardLabel}>Avg Session Length</div>
             <div style={s.cardNum}>{fmtDuration(avg_session_duration_seconds)}</div>
-            <div style={s.cardLabel}>{avg_messages_per_session != null ? avg_messages_per_session + ' msgs avg' : ''}</div>
+          </div>
+          <div style={s.card}>
+            <div style={s.cardLabel}>Avg Messages / Session</div>
+            <div style={s.cardNum}>{avg_messages_per_session != null ? avg_messages_per_session : '—'}</div>
           </div>
           <div style={{ ...s.card, background: reports && reports.length > 0 ? '#fff5f5' : '#fff', borderColor: reports && reports.length > 0 ? '#fecaca' : 'transparent', border: '1px solid' }}>
             <div style={s.cardLabel}>Flagged Reports</div>
