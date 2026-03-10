@@ -302,7 +302,6 @@
         '<span class="cg-dot"></span>' +
         '<span class="cg-dot"></span>';
       messagesEl.appendChild(el);
-      scrollToBottom();
     }
 
     function hideTypingIndicator() {
@@ -315,13 +314,12 @@
     }
 
     function scrollMsgToTop(el) {
-      var top = 0;
-      var node = el;
-      while (node && node !== messagesEl) {
-        top += node.offsetTop;
-        node = node.offsetParent;
-      }
-      messagesEl.scrollTo({ top: Math.max(0, top - 24), behavior: 'smooth' });
+      var rect = el.getBoundingClientRect();
+      var containerRect = messagesEl.getBoundingClientRect();
+      var target = messagesEl.scrollTop + (rect.top - containerRect.top) - 24;
+      messagesEl.style.scrollBehavior = 'auto';
+      messagesEl.scrollTop = Math.max(0, target);
+      messagesEl.style.scrollBehavior = '';
     }
 
     // --- Markdown renderer: handles links, bold, italic, numbered + bullet lists ---
