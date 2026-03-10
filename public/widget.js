@@ -115,6 +115,7 @@
     // Anonymous session tracking
     var sessionStartTime = null;
     var messageCount = 0;
+    var lastUserMsgEl = null;
 
     window.addEventListener('beforeunload', function () {
       if (sessionStartTime === null || messageCount === 0) return;
@@ -191,6 +192,7 @@
       el.className = 'cg-msg cg-msg--user';
       el.textContent = text;
       messagesEl.appendChild(el);
+      lastUserMsgEl = el;
       scrollMsgToTop(el);
     }
 
@@ -256,7 +258,7 @@
       el.appendChild(bodyEl);
       el.appendChild(actionsEl);
       messagesEl.appendChild(el);
-      scrollMsgToTop(el);
+      if (lastUserMsgEl) scrollMsgToTop(lastUserMsgEl);
 
       // Typewriter animation
       startTypewriter(bodyEl, text, function () {
