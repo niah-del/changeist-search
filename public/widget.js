@@ -86,6 +86,12 @@
         '</div>' +
         '<div class="cg-messages" role="log" aria-live="polite" aria-label="Conversation"></div>' +
         '<div class="cg-chat-form-wrap">' +
+          '<div class="cg-quick-btns">' +
+            '<button class="cg-quick-btn" data-quick="mindfulness">🌿 Mindfulness Plan</button>' +
+            '<button class="cg-quick-btn" data-quick="interview">💼 Interview Tips</button>' +
+            '<button class="cg-quick-btn" data-quick="resume">📄 Resume Tips</button>' +
+            '<button class="cg-quick-btn" data-quick="brighten">☀️ Brighten My Day</button>' +
+          '</div>' +
           '<form class="cg-chat-form" role="form">' +
             '<input class="cg-chat-input" type="text" autocomplete="off" ' +
                    'placeholder="' + escapeAttr(PLACEHOLDER) + '" aria-label="Message" />' +
@@ -107,6 +113,27 @@
     var input = container.querySelector('.cg-chat-input');
     var messagesEl = container.querySelector('.cg-messages');
     var sendBtn = container.querySelector('.cg-chat-btn');
+
+    // Quick action buttons
+    var quickPrompts = {
+      mindfulness: 'Help me create a short mindfulness plan with activities for grounding and re-energizing.',
+      interview:   'Give me interview tips for ',
+      resume:      'Give me resume tips for ',
+      brighten:    'Share some good news or something uplifting to brighten my day!',
+    };
+    container.querySelectorAll('.cg-quick-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var key = btn.getAttribute('data-quick');
+        if (key === 'brighten') {
+          sendMessage(quickPrompts.brighten);
+        } else {
+          input.value = quickPrompts[key];
+          input.focus();
+          // Place cursor at end
+          input.setSelectionRange(input.value.length, input.value.length);
+        }
+      });
+    });
 
     // Conversation history (sent to API on each turn)
     var messages = [];
