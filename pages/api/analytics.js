@@ -22,6 +22,7 @@ export default async function handler(req, res) {
     { data: usCityRows },
     { data: dayRows },
     { data: sessionRows },
+    { data: ageRows },
     { data: reportRows },
   ] = await Promise.all([
     supabase.from('search_events').select('*', { count: 'exact', head: true })
@@ -38,6 +39,8 @@ export default async function handler(req, res) {
       .gte('created_at', since),
     supabase.from('search_events').select('duration_seconds, message_count')
       .eq('event_type', 'session_end').gte('created_at', since),
+    supabase.from('search_events').select('age')
+      .eq('event_type', 'age_mention').gte('created_at', since).not('age', 'is', null),
     supabase.from('reports').select('id, user_message, assistant_message, country, created_at')
       .order('created_at', { ascending: false }).limit(50),
   ]);
@@ -51,6 +54,19 @@ export default async function handler(req, res) {
   const top_queries = Object.entries(queryCounts)
     .sort((a, b) => b[1] - a[1]).slice(0, 20)
     .map(([query, count]) => ({ query, count }));
+
+  // Age distribution
+  const ageBuckets = { '10–17': 0, '18–24': 0, '25–34': 0, '35–44': 0, '45–54': 0, '55+': 0 };
+  (ageRows || []).forEach(r => {
+    const a = r.age;
+    if (a >= 10 && a <= 17)      ageBuckets['10–17']++;
+    else if (a >= 18 && a <= 24) ageBuckets['18–24']++;
+    else if (a >= 25 && a <= 34) ageBuckets['25–34']++;
+    else if (a >= 35 && a <= 44) ageBuckets['35–44']++;
+    else if (a >= 45 && a <= 54) ageBuckets['45–54']++;
+    else if (a >= 55)            ageBuckets['55+']++;
+  });
+  const age_distribution = Object.entries(ageBuckets).map(([range, count]) => ({ range, count }));
 
   // US cities
   const usCityCounts = {};
@@ -95,6 +111,7 @@ export default async function handler(req, res) {
     avg_session_duration_seconds: avg(durations),
     avg_messages_per_session:     avg(msgCounts),
     top_queries,
+    age_distribution,
     by_country,
     us_cities,
     by_day,

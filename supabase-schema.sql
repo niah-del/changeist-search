@@ -66,6 +66,7 @@ create table if not exists search_events (
   country          text,                -- 2-letter country code, e.g. "US"
   region           text,                -- region/state code, e.g. "CA"
   city             text,                -- city name, e.g. "Los Angeles"
+  age              integer,                        -- self-reported age from chat (age_mention events only)
   embed_key_id     uuid references embed_keys(id), -- which partner site (null = Changeist internal)
   created_at       timestamptz not null default now()
 );

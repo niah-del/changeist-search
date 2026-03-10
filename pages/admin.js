@@ -69,12 +69,13 @@ export default function Dashboard() {
     );
   }
 
-  const { totals, avg_session_duration_seconds, avg_messages_per_session, top_queries, by_country, us_cities, by_day, reports } = data;
+  const { totals, avg_session_duration_seconds, avg_messages_per_session, top_queries, age_distribution, by_country, us_cities, by_day, reports } = data;
 
   const maxDay     = Math.max(...(by_day || []).map(d => d.count), 1);
   const maxQuery   = Math.max(...(top_queries || []).map(q => q.count), 1);
   const maxCountry = Math.max(...(by_country || []).map(c => c.count), 1);
   const maxCity    = Math.max(...(us_cities  || []).map(c => c.count), 1);
+  const maxAge     = Math.max(...(age_distribution || []).map(a => a.count), 1);
 
   function fmtDuration(s) {
     if (!s) return '—';
@@ -157,6 +158,23 @@ export default function Dashboard() {
             ))}
             {(!by_country || by_country.length === 0) && <div style={{ color: '#aaa', fontSize: 14 }}>No data yet</div>}
           </div>
+        </div>
+
+        {/* Age distribution */}
+        <div style={s.section}>
+          <div style={s.sectionH}>Age Distribution <span style={{ fontFamily: 'Lato, sans-serif', fontSize: 12, fontWeight: 400, color: '#aaa' }}>(self-reported in chat)</span></div>
+          {(age_distribution || []).every(a => a.count === 0)
+            ? <div style={{ color: '#aaa', fontSize: 14 }}>No data yet</div>
+            : <div style={{ display: 'flex', gap: 24, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                {(age_distribution || []).map(a => (
+                  <div key={a.range} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    <div style={{ fontSize: 12, color: '#888' }}>{a.count}</div>
+                    <div style={{ width: 48, background: '#1a1a1a', borderRadius: '4px 4px 0 0', height: Math.max(4, Math.round((a.count / maxAge) * 80)) }} />
+                    <div style={{ fontSize: 12, color: '#666' }}>{a.range}</div>
+                  </div>
+                ))}
+              </div>
+          }
         </div>
 
         {/* US cities */}

@@ -107,6 +107,22 @@ const tools = [
   },
 ];
 
+function extractAge(text) {
+  const patterns = [
+    /\bi(?:'m| am)\s+(\d{1,3})\b/i,              // "I'm 25" / "I am 25"
+    /\b(\d{1,3})\s+years?\s*old\b/i,             // "25 years old"
+    /\bage[d]?\s*(?:is\s+|of\s+)?(\d{1,3})\b/i, // "age 25" / "aged 25"
+  ];
+  for (const p of patterns) {
+    const m = text.match(p);
+    if (m) {
+      const age = parseInt(m[1]);
+      if (age >= 10 && age <= 110) return age;
+    }
+  }
+  return null;
+}
+
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -143,6 +159,13 @@ export default async function handler(req, res) {
     if (firstQuery) {
       logEvent('search', { query: firstQuery, embed_key_id: embedKeyId, ...geo });
     }
+  }
+
+  // Detect age if mentioned in the latest user message (only log once per unique age share)
+  const latestUserMsg = [...messages].reverse().find(m => m.role === 'user')?.content || '';
+  const detectedAge = extractAge(latestUserMsg);
+  if (detectedAge !== null) {
+    logEvent('age_mention', { age: detectedAge, embed_key_id: embedKeyId, ...geoFromRequest(req) });
   }
 
   // Cap history to last 20 messages to control token usage
