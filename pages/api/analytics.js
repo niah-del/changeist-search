@@ -104,6 +104,7 @@ export default async function handler(req, res) {
   const avg = arr => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : null;
 
   return res.status(200).json({
+    _debug_usCityRows: usCityRows,
     period: 'last_30_days',
     totals: {
       searches:              totalSearches || 0,
