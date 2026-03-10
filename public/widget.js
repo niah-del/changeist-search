@@ -256,6 +256,7 @@
       el.appendChild(bodyEl);
       el.appendChild(actionsEl);
       messagesEl.appendChild(el);
+      scrollMsgToTop(el);
 
       // Typewriter animation
       startTypewriter(bodyEl, text, function () {
@@ -299,6 +300,7 @@
         '<span class="cg-dot"></span>' +
         '<span class="cg-dot"></span>';
       messagesEl.appendChild(el);
+      scrollToBottom();
     }
 
     function hideTypingIndicator() {
