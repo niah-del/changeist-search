@@ -33,8 +33,8 @@ export default async function handler(req, res) {
       .eq('event_type', 'search').gte('created_at', since).not('query', 'is', null),
     supabase.from('search_events').select('country, region')
       .gte('created_at', since).not('country', 'is', null),
-    supabase.from('search_events').select('city')
-      .ilike('country', 'us').gte('created_at', since).not('city', 'is', null),
+    supabase.from('search_events').select('city, country')
+      .gte('created_at', since).not('city', 'is', null),
     supabase.from('search_events').select('created_at, event_type')
       .gte('created_at', since),
     supabase.from('search_events').select('duration_seconds, message_count')
@@ -68,10 +68,12 @@ export default async function handler(req, res) {
   });
   const age_distribution = Object.entries(ageBuckets).map(([range, count]) => ({ range, count }));
 
-  // US cities
+  // US cities — filter by country in JS to handle both 'us' and 'US' stored values
   const usCityCounts = {};
   (usCityRows || []).forEach(r => {
-    if (r.city) usCityCounts[r.city] = (usCityCounts[r.city] || 0) + 1;
+    if (r.city && r.country && r.country.toUpperCase() === 'US') {
+      usCityCounts[r.city] = (usCityCounts[r.city] || 0) + 1;
+    }
   });
   const us_cities = Object.entries(usCityCounts)
     .sort((a, b) => b[1] - a[1]).slice(0, 15)
