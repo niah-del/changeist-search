@@ -135,12 +135,14 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'messages array is required' });
   }
 
-  // Log chat session start on the user's first message
+  // Log chat session start and first query on the user's first message
   if (messages.length === 1) {
-    logEvent('chat_start', {
-      embed_key_id: embedKeyId,
-      ...geoFromRequest(req),
-    });
+    const geo = geoFromRequest(req);
+    logEvent('chat_start', { embed_key_id: embedKeyId, ...geo });
+    const firstQuery = messages[0]?.content?.trim();
+    if (firstQuery) {
+      logEvent('search', { query: firstQuery, embed_key_id: embedKeyId, ...geo });
+    }
   }
 
   // Cap history to last 20 messages to control token usage
