@@ -341,12 +341,7 @@
     }
 
     function scrollMsgToTop(el) {
-      // scrollIntoView handles complex flex/nested layouts correctly.
-      // We restore window scroll immediately after so the page itself doesn't jump.
-      var pageX = window.scrollX !== undefined ? window.scrollX : window.pageXOffset;
-      var pageY = window.scrollY !== undefined ? window.scrollY : window.pageYOffset;
       el.scrollIntoView({ block: 'start', behavior: 'instant' });
-      window.scrollTo(pageX, pageY);
     }
 
     // --- Markdown renderer: handles links, bold, italic, numbered + bullet lists ---
