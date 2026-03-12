@@ -342,23 +342,31 @@
 
     function scrollMsgToTop(el) {
       setTimeout(function () {
-        var rect = el.getBoundingClientRect();
-        var scrollBy = rect.top - 24;
-        if (Math.abs(scrollBy) < 5) return;
-
-        // Walk up to find the actual scrollable container
+        // Find the scroll container
+        var container = null;
         var node = el.parentElement;
         while (node && node !== document.documentElement) {
           var style = window.getComputedStyle(node);
           var oy = style.overflowY;
           if ((oy === 'auto' || oy === 'scroll') && node.scrollHeight > node.clientHeight) {
-            node.scrollBy({ top: scrollBy, behavior: 'instant' });
-            return;
+            container = node;
+            break;
           }
           node = node.parentElement;
         }
-        // Fallback: page is the scroll container
-        window.scrollBy({ top: scrollBy, behavior: 'instant' });
+
+        if (container) {
+          // Scroll amount is relative to container's top edge, not viewport top
+          var containerRect = container.getBoundingClientRect();
+          var elRect = el.getBoundingClientRect();
+          var scrollAmount = elRect.top - containerRect.top - 8;
+          if (Math.abs(scrollAmount) < 5) return;
+          container.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+        } else {
+          var amount = el.getBoundingClientRect().top - 24;
+          if (Math.abs(amount) < 5) return;
+          window.scrollBy({ top: amount, behavior: 'smooth' });
+        }
       }, 50);
     }
 
