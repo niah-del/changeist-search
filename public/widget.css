@@ -438,6 +438,25 @@
   .cg-welcome-sub { font-size: 16px; }
 }
 
+/* --- Confetti canvas --- */
+.cg-confetti {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ensure chat content sits above canvas */
+.cg-welcome,
+.cg-messages,
+.cg-chat-form-wrap,
+.cg-footer {
+  position: relative;
+  z-index: 1;
+}
+
 /* --- Chat container --- */
 .cg-chat {
   display: flex;

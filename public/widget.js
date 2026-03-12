@@ -77,6 +77,7 @@
     // --- Build the chat widget HTML ---
     container.innerHTML =
       '<div class="cg-widget cg-chat cg-chat--welcome">' +
+        '<canvas class="cg-confetti"></canvas>' +
         '<div class="cg-welcome">' +
           '<div class="cg-welcome-inner">' +
             '<p class="cg-welcome-hi">Hi, Friend!</p>' +
@@ -107,6 +108,83 @@
     var input = container.querySelector('.cg-chat-input');
     var messagesEl = container.querySelector('.cg-messages');
     var sendBtn = container.querySelector('.cg-chat-btn');
+
+    // --- Confetti background ---
+    (function () {
+      var canvas = container.querySelector('.cg-confetti');
+      var ctx = canvas.getContext('2d');
+      var COLORS = ['#ed1869', '#f54d8e', '#fce7f0', '#c48098', '#ffb3cc', '#ff85aa'];
+      var SHAPES = ['circle', 'rect', 'star'];
+      var COUNT = 28;
+      var particles = [];
+
+      function resize() {
+        canvas.width = chatEl.offsetWidth;
+        canvas.height = chatEl.offsetHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      function makeParticle(randomY) {
+        return {
+          x: Math.random() * canvas.width,
+          y: randomY ? Math.random() * canvas.height : -10,
+          r: 3 + Math.random() * 4,
+          color: COLORS[Math.floor(Math.random() * COLORS.length)],
+          shape: SHAPES[Math.floor(Math.random() * SHAPES.length)],
+          speed: 0.3 + Math.random() * 0.5,
+          drift: (Math.random() - 0.5) * 0.3,
+          wobble: Math.random() * Math.PI * 2,
+          wobbleSpeed: 0.01 + Math.random() * 0.02,
+          opacity: 0.25 + Math.random() * 0.35,
+          rotation: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.01,
+        };
+      }
+
+      for (var i = 0; i < COUNT; i++) particles.push(makeParticle(true));
+
+      function drawStar(ctx, x, y, r) {
+        ctx.beginPath();
+        for (var p = 0; p < 5; p++) {
+          var a = (p * 4 * Math.PI) / 5 - Math.PI / 2;
+          p === 0 ? ctx.moveTo(x + r * Math.cos(a), y + r * Math.sin(a))
+                  : ctx.lineTo(x + r * Math.cos(a), y + r * Math.sin(a));
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function tick() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (var i = 0; i < particles.length; i++) {
+          var p = particles[i];
+          p.y += p.speed;
+          p.wobble += p.wobbleSpeed;
+          p.x += p.drift + Math.sin(p.wobble) * 0.4;
+          p.rotation += p.rotSpeed;
+          if (p.y > canvas.height + 10) particles[i] = makeParticle(false);
+
+          ctx.save();
+          ctx.globalAlpha = p.opacity;
+          ctx.fillStyle = p.color;
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rotation);
+          if (p.shape === 'circle') {
+            ctx.beginPath();
+            ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (p.shape === 'rect') {
+            ctx.fillRect(-p.r, -p.r * 0.6, p.r * 2, p.r * 1.2);
+          } else {
+            drawStar(ctx, 0, 0, p.r);
+          }
+          ctx.restore();
+        }
+        requestAnimationFrame(tick);
+      }
+      tick();
+    })();
 
     // Conversation history (sent to API on each turn)
     var messages = [];
