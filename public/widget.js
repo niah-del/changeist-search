@@ -194,14 +194,12 @@
           var fullText = '';       // all text received from SSE so far
           var typedChars = 0;     // how many chars have been rendered
           var streamDone = false;
-          var cursorEl = document.createElement('span');
-          cursorEl.className = 'cg-cursor';
 
           var typingTimer = setInterval(function () {
             if (typedChars >= fullText.length) {
               if (streamDone) {
                 clearInterval(typingTimer);
-                // Final render without cursor
+                // Final render
                 bodyEl.innerHTML = markdownLinksToHtml(fullText);
                 actionsEl.style.display = '';
                 messages.push({ role: 'assistant', content: fullText });
@@ -214,7 +212,6 @@
             var step = fullText.length - typedChars > 80 ? 4 : 1;
             typedChars = Math.min(fullText.length, typedChars + step);
             bodyEl.innerHTML = markdownLinksToHtml(fullText.slice(0, typedChars));
-            bodyEl.appendChild(cursorEl);
           }, 18);
 
           actionsEl.querySelector('.cg-copy-btn').addEventListener('click', function () {

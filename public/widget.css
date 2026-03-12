@@ -570,23 +570,6 @@
   color: #f28b82;
 }
 
-/* --- Streaming cursor --- */
-.cg-cursor {
-  display: inline-block;
-  width: 2px;
-  height: 0.85em;
-  background: currentColor;
-  margin-left: 2px;
-  vertical-align: text-bottom;
-  border-radius: 1px;
-  animation: cg-cursor-blink 0.8s step-end infinite;
-}
-
-@keyframes cg-cursor-blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
-}
-
 /* --- Typing indicator --- */
 .cg-msg--typing {
   display: flex;
