@@ -341,10 +341,9 @@
     }
 
     function scrollMsgToTop(el) {
-      // .cg-messages has position:relative so el.offsetTop is relative to it
-      messagesEl.style.scrollBehavior = 'auto';
-      messagesEl.scrollTop = Math.max(0, el.offsetTop - 24);
-      messagesEl.style.scrollBehavior = '';
+      requestAnimationFrame(function () {
+        messagesEl.scrollTo({ top: Math.max(0, el.offsetTop - 24), behavior: 'instant' });
+      });
     }
 
     // --- Markdown renderer: handles links, bold, italic, numbered + bullet lists ---
