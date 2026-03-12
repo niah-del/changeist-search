@@ -114,7 +114,7 @@
       var canvas = container.querySelector('.cg-confetti');
       var ctx = canvas.getContext('2d');
       var COLORS = ['#ed1869', '#73bf44', '#edc618', '#2eafd7'];
-      var SHAPES = ['circle', 'rect', 'star'];
+      var SHAPES = ['circle', 'rect', 'star', 'heart', 'bolt'];
       var COUNT = 28;
       var MARGIN = 90; // px wide strip on each side
       var particles = [];
@@ -161,6 +161,28 @@
         ctx.fill();
       }
 
+      function drawHeart(ctx, x, y, r) {
+        ctx.beginPath();
+        ctx.moveTo(x, y + r * 0.3);
+        ctx.bezierCurveTo(x, y - r * 0.3, x - r, y - r * 0.3, x - r, y + r * 0.2);
+        ctx.bezierCurveTo(x - r, y + r * 0.7, x, y + r, x, y + r);
+        ctx.bezierCurveTo(x, y + r, x + r, y + r * 0.7, x + r, y + r * 0.2);
+        ctx.bezierCurveTo(x + r, y - r * 0.3, x, y - r * 0.3, x, y + r * 0.3);
+        ctx.fill();
+      }
+
+      function drawBolt(ctx, x, y, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r * 0.3, y - r);
+        ctx.lineTo(x - r * 0.1, y - r * 0.05);
+        ctx.lineTo(x + r * 0.25, y - r * 0.05);
+        ctx.lineTo(x - r * 0.3, y + r);
+        ctx.lineTo(x + r * 0.1, y + r * 0.05);
+        ctx.lineTo(x - r * 0.25, y + r * 0.05);
+        ctx.closePath();
+        ctx.fill();
+      }
+
       function tick() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (var i = 0; i < particles.length; i++) {
@@ -188,8 +210,12 @@
             ctx.fill();
           } else if (p.shape === 'rect') {
             ctx.fillRect(-p.r, -p.r * 0.6, p.r * 2, p.r * 1.2);
-          } else {
+          } else if (p.shape === 'star') {
             drawStar(ctx, 0, 0, p.r);
+          } else if (p.shape === 'heart') {
+            drawHeart(ctx, 0, 0, p.r);
+          } else {
+            drawBolt(ctx, 0, 0, p.r);
           }
           ctx.restore();
         }
