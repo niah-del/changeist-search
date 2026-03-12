@@ -191,7 +191,31 @@
               '<span class="cg-report-label">Report</span>' +
             '</button>';
 
-          var fullText = '';
+          var fullText = '';       // all text received from SSE so far
+          var typedChars = 0;     // how many chars have been rendered
+          var streamDone = false;
+          var cursorEl = document.createElement('span');
+          cursorEl.className = 'cg-cursor';
+
+          var typingTimer = setInterval(function () {
+            if (typedChars >= fullText.length) {
+              if (streamDone) {
+                clearInterval(typingTimer);
+                // Final render without cursor
+                bodyEl.innerHTML = markdownLinksToHtml(fullText);
+                actionsEl.style.display = '';
+                messages.push({ role: 'assistant', content: fullText });
+                isLoading = false;
+                sendBtn.disabled = false;
+              }
+              return;
+            }
+            // Reveal chars — speed up if buffer is large
+            var step = fullText.length - typedChars > 80 ? 4 : 1;
+            typedChars = Math.min(fullText.length, typedChars + step);
+            bodyEl.innerHTML = markdownLinksToHtml(fullText.slice(0, typedChars));
+            bodyEl.appendChild(cursorEl);
+          }, 18);
 
           actionsEl.querySelector('.cg-copy-btn').addEventListener('click', function () {
             var btn = this;
@@ -238,14 +262,8 @@
           function readChunk() {
             reader.read().then(function (result) {
               if (result.done) {
-                // Stream closed — finalize if not already done
-                if (fullText) {
-                  bodyEl.innerHTML = markdownLinksToHtml(fullText);
-                  actionsEl.style.display = '';
-                  messages.push({ role: 'assistant', content: fullText });
-                }
-                isLoading = false;
-                sendBtn.disabled = false;
+                // Stream closed — let the typing timer finish naturally
+                streamDone = true;
                 return;
               }
 
@@ -262,14 +280,10 @@
                     var data = JSON.parse(line.slice(6));
                     if (lastEvent === 'chunk') {
                       fullText += data.text;
-                      bodyEl.innerHTML = markdownLinksToHtml(fullText);
                     } else if (lastEvent === 'done') {
-                      bodyEl.innerHTML = markdownLinksToHtml(fullText);
-                      actionsEl.style.display = '';
-                      messages.push({ role: 'assistant', content: fullText });
-                      isLoading = false;
-                      sendBtn.disabled = false;
+                      streamDone = true;
                     } else if (lastEvent === 'error') {
+                      clearInterval(typingTimer);
                       appendErrorMessage();
                       messages.pop();
                       isLoading = false;
@@ -282,6 +296,7 @@
               readChunk();
             }).catch(function (err) {
               console.error('[Changeist]', err);
+              clearInterval(typingTimer);
               appendErrorMessage();
               messages.pop();
               isLoading = false;
