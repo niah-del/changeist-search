@@ -148,13 +148,15 @@ function extractAge(text) {
   return null;
 }
 
+export const config = { api: { responseLimit: false } };
+
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { key, messages } = req.body || {};
 
-  // --- Validate embed key ---
+  // --- Validate embed key (before switching to SSE) ---
   const internalKey = process.env.INTERNAL_EMBED_KEY || 'changeist-internal';
   if (!key) return res.status(401).json({ error: 'Missing API key' });
 
@@ -186,76 +188,111 @@ export default async function handler(req, res) {
     }
   }
 
-  // Detect age if mentioned in the latest user message (only log once per unique age share)
+  // Detect age if mentioned in the latest user message
   const latestUserMsg = [...messages].reverse().find(m => m.role === 'user')?.content || '';
   const detectedAge = extractAge(latestUserMsg);
   if (detectedAge !== null) {
     logEvent('age_mention', { age: detectedAge, embed_key_id: embedKeyId, ...geoFromRequest(req) });
   }
 
-  // Cap history to last 20 messages to control token usage
-  const cappedMessages = messages.slice(-20);
+  // --- Switch to SSE streaming ---
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
 
-  // --- Agentic tool-use loop ---
-  let currentMessages = [...cappedMessages];
+  const sendEvent = (event, data) => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  };
 
-  while (true) {
-    const response = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1500,
-      system: SYSTEM_PROMPT,
-      tools,
-      messages: currentMessages,
-    });
+  try {
+    const cappedMessages = messages.slice(-20);
+    let currentMessages = [...cappedMessages];
+    let toolCallCount = 0;
 
-    if (response.stop_reason === 'tool_use') {
-      currentMessages.push({ role: 'assistant', content: response.content });
+    while (true) {
+      const stream = anthropic.messages.stream({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1500,
+        system: SYSTEM_PROMPT,
+        tools: toolCallCount < 3 ? tools : undefined,
+        messages: currentMessages,
+      });
 
-      const toolResults = [];
-      for (const block of response.content) {
-        if (block.type !== 'tool_use') continue;
+      // Collect tool-use blocks while streaming text chunks to client
+      const toolUseBlocks = [];
+      const inputJsonMap = {};
 
-        if (block.name === 'search_opportunities') {
-          const results = await searchOpportunities({
-            query: block.input.query,
-            type: block.input.type || '',
+      for await (const event of stream) {
+        if (event.type === 'content_block_start' && event.content_block.type === 'tool_use') {
+          inputJsonMap[event.index] = '';
+          toolUseBlocks.push({
+            type: 'tool_use',
+            id: event.content_block.id,
+            name: event.content_block.name,
+            input: {},
+            _index: event.index,
           });
-          toolResults.push({
-            type: 'tool_result',
-            tool_use_id: block.id,
-            content: JSON.stringify(results.slice(0, 8)),
-          });
-        } else if (block.name === 'research_organization') {
-          // Use rawSearch for news/site: queries so opportunity terms don't corrupt results
-          const isNewsQuery = block.input.query.includes('goodnewsnetwork.org') || block.input.query.startsWith('site:');
-          const results = isNewsQuery
-            ? await rawSearch(block.input.query, 8)
-            : await googleSearch(block.input.query, 5, '');
-          const summary = results.map(r =>
-            `${r.title}\n${r.url}\n${r.description || ''}`
-          ).join('\n\n');
-          toolResults.push({
-            type: 'tool_result',
-            tool_use_id: block.id,
-            content: summary || 'No results found.',
-          });
+        } else if (event.type === 'content_block_delta') {
+          if (event.delta.type === 'text_delta') {
+            sendEvent('chunk', { text: event.delta.text });
+          } else if (event.delta.type === 'input_json_delta') {
+            inputJsonMap[event.index] = (inputJsonMap[event.index] || '') + event.delta.partial_json;
+          }
         }
       }
 
-      currentMessages.push({ role: 'user', content: toolResults });
-      continue;
+      const finalMsg = await stream.finalMessage();
+
+      // Parse accumulated tool inputs
+      for (const block of toolUseBlocks) {
+        try { block.input = JSON.parse(inputJsonMap[block._index] || '{}'); } catch {}
+        delete block._index;
+      }
+
+      if (finalMsg.stop_reason === 'tool_use') {
+        toolCallCount++;
+        const toolResults = [];
+
+        for (const block of toolUseBlocks) {
+          let resultContent = 'No results found.';
+          if (block.name === 'search_opportunities') {
+            const results = await searchOpportunities({
+              query: block.input.query,
+              type: block.input.type || '',
+            });
+            resultContent = JSON.stringify(results.slice(0, 8));
+          } else if (block.name === 'research_organization') {
+            const isNewsQuery = block.input.query.includes('goodnewsnetwork.org') || block.input.query.startsWith('site:');
+            const results = isNewsQuery
+              ? await rawSearch(block.input.query, 8)
+              : await googleSearch(block.input.query, 5, '');
+            resultContent = results.map(r =>
+              `${r.title}\n${r.url}\n${r.description || ''}`
+            ).join('\n\n') || 'No results found.';
+          }
+          toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: resultContent });
+        }
+
+        currentMessages.push({ role: 'assistant', content: finalMsg.content });
+        currentMessages.push({ role: 'user', content: toolResults });
+        continue;
+      }
+
+      // stop_reason === 'end_turn' — text was already streamed chunk by chunk
+      const userMessageCount = messages.filter(m => m.role === 'user').length;
+      if (userMessageCount === 4) {
+        sendEvent('chunk', { text: '\n\n💧 *We want to use AI to benefit our communities — but we also understand the adverse impacts it has. Please be aware that each query uses roughly a small sip of water to cool the servers that power me. Let\'s use this tool responsibly and make every search count.* 🌱' });
+      }
+
+      sendEvent('done', {});
+      res.end();
+      return;
     }
-
-    // stop_reason === 'end_turn'
-    const textBlock = response.content.find((b) => b.type === 'text');
-    let responseText = textBlock?.text || '';
-
-    // Append eco-reminder on the user's 4th message exactly
-    const userMessageCount = messages.filter(m => m.role === 'user').length;
-    if (userMessageCount === 4) {
-      responseText += '\n\n💧 *We want to use AI to benefit our communities — but we also understand the adverse impacts it has. Please be aware that each query uses roughly a small sip of water to cool the servers that power me. Let\'s use this tool responsibly and make every search count.* 🌱';
-    }
-
-    return res.status(200).json({ message: responseText });
+  } catch (err) {
+    console.error('[chat stream]', err);
+    sendEvent('error', { message: 'Something went wrong. Please try again.' });
+    res.end();
   }
 }

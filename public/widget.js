@@ -166,23 +166,135 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key: API_KEY, messages: messages }),
       })
-        .then(function (res) {
-          if (!res.ok) throw new Error('Chat request failed (' + res.status + ')');
-          return res.json();
-        })
-        .then(function (data) {
+        .then(function (response) {
+          if (!response.ok) throw new Error('Chat request failed (' + response.status + ')');
           hideTypingIndicator();
-          var reply = data.message || '';
-          messages.push({ role: 'assistant', content: reply });
-          appendAssistantMessage(reply);
-          isLoading = false;
-          sendBtn.disabled = false;
+
+          // Build assistant message element
+          var precedingUserMsg = userText;
+          var el = document.createElement('div');
+          el.className = 'cg-msg cg-msg--assistant';
+
+          var bodyEl = document.createElement('div');
+          bodyEl.className = 'cg-msg-body';
+
+          var actionsEl = document.createElement('div');
+          actionsEl.className = 'cg-msg-actions';
+          actionsEl.style.display = 'none';
+          actionsEl.innerHTML =
+            '<button class="cg-copy-btn" aria-label="Copy message" title="Copy to clipboard">' +
+              '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+              '<span class="cg-copy-label">Copy</span>' +
+            '</button>' +
+            '<button class="cg-report-btn" aria-label="Report message" title="Report this response">' +
+              '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>' +
+              '<span class="cg-report-label">Report</span>' +
+            '</button>';
+
+          var fullText = '';
+
+          actionsEl.querySelector('.cg-copy-btn').addEventListener('click', function () {
+            var btn = this;
+            var label = btn.querySelector('.cg-copy-label');
+            navigator.clipboard.writeText(fullText).then(function () {
+              label.textContent = 'Copied!';
+              btn.classList.add('cg-copy-btn--done');
+              setTimeout(function () {
+                label.textContent = 'Copy';
+                btn.classList.remove('cg-copy-btn--done');
+              }, 2000);
+            });
+          });
+
+          actionsEl.querySelector('.cg-report-btn').addEventListener('click', function () {
+            var btn = this;
+            var label = btn.querySelector('.cg-report-label');
+            btn.disabled = true;
+            label.textContent = 'Reporting…';
+            fetch(API_BASE + '/api/report', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ key: API_KEY, user_message: precedingUserMsg, assistant_message: fullText }),
+            }).then(function (res) {
+              label.textContent = res.ok ? 'Reported' : 'Failed';
+              btn.classList.add('cg-report-btn--done');
+            }).catch(function () {
+              label.textContent = 'Failed';
+              btn.disabled = false;
+            });
+          });
+
+          el.appendChild(bodyEl);
+          el.appendChild(actionsEl);
+          messagesEl.appendChild(el);
+          if (lastUserMsgEl) scrollMsgToTop(lastUserMsgEl);
+
+          // Read SSE stream
+          var reader = response.body.getReader();
+          var decoder = new TextDecoder();
+          var buffer = '';
+          var lastEvent = '';
+
+          function readChunk() {
+            reader.read().then(function (result) {
+              if (result.done) {
+                // Stream closed — finalize if not already done
+                if (fullText) {
+                  bodyEl.innerHTML = markdownLinksToHtml(fullText);
+                  actionsEl.style.display = '';
+                  messages.push({ role: 'assistant', content: fullText });
+                }
+                isLoading = false;
+                sendBtn.disabled = false;
+                return;
+              }
+
+              buffer += decoder.decode(result.value, { stream: true });
+              var lines = buffer.split('\n');
+              buffer = lines.pop(); // keep incomplete line
+
+              for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                if (line.indexOf('event: ') === 0) {
+                  lastEvent = line.slice(7).trim();
+                } else if (line.indexOf('data: ') === 0) {
+                  try {
+                    var data = JSON.parse(line.slice(6));
+                    if (lastEvent === 'chunk') {
+                      fullText += data.text;
+                      bodyEl.innerHTML = markdownLinksToHtml(fullText);
+                    } else if (lastEvent === 'done') {
+                      bodyEl.innerHTML = markdownLinksToHtml(fullText);
+                      actionsEl.style.display = '';
+                      messages.push({ role: 'assistant', content: fullText });
+                      isLoading = false;
+                      sendBtn.disabled = false;
+                    } else if (lastEvent === 'error') {
+                      appendErrorMessage();
+                      messages.pop();
+                      isLoading = false;
+                      sendBtn.disabled = false;
+                    }
+                  } catch (e) {}
+                }
+              }
+
+              readChunk();
+            }).catch(function (err) {
+              console.error('[Changeist]', err);
+              appendErrorMessage();
+              messages.pop();
+              isLoading = false;
+              sendBtn.disabled = false;
+            });
+          }
+
+          readChunk();
         })
         .catch(function (err) {
           hideTypingIndicator();
           appendErrorMessage();
           console.error('[Changeist]', err);
-          // Remove the failed user message from history so user can retry
           messages.pop();
           isLoading = false;
           sendBtn.disabled = false;
@@ -197,94 +309,6 @@
       messagesEl.appendChild(el);
       lastUserMsgEl = el;
       scrollMsgToTop(el);
-    }
-
-    function appendAssistantMessage(text) {
-      // Capture the user message that prompted this response
-      var precedingUserMsg = '';
-      for (var i = messages.length - 1; i >= 0; i--) {
-        if (messages[i].role === 'user') { precedingUserMsg = messages[i].content; break; }
-      }
-
-      var el = document.createElement('div');
-      el.className = 'cg-msg cg-msg--assistant';
-
-      // Separate body element for typewriter animation
-      var bodyEl = document.createElement('div');
-      bodyEl.className = 'cg-msg-body';
-
-      // Action buttons — hidden until typing finishes
-      var actionsEl = document.createElement('div');
-      actionsEl.className = 'cg-msg-actions';
-      actionsEl.style.display = 'none';
-      actionsEl.innerHTML =
-        '<button class="cg-copy-btn" aria-label="Copy message" title="Copy to clipboard">' +
-          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
-          '<span class="cg-copy-label">Copy</span>' +
-        '</button>' +
-        '<button class="cg-report-btn" aria-label="Report message" title="Report this response">' +
-          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>' +
-          '<span class="cg-report-label">Report</span>' +
-        '</button>';
-
-      actionsEl.querySelector('.cg-copy-btn').addEventListener('click', function () {
-        var btn = this;
-        var label = btn.querySelector('.cg-copy-label');
-        navigator.clipboard.writeText(text).then(function () {
-          label.textContent = 'Copied!';
-          btn.classList.add('cg-copy-btn--done');
-          setTimeout(function () {
-            label.textContent = 'Copy';
-            btn.classList.remove('cg-copy-btn--done');
-          }, 2000);
-        });
-      });
-
-      actionsEl.querySelector('.cg-report-btn').addEventListener('click', function () {
-        var btn = this;
-        var label = btn.querySelector('.cg-report-label');
-        btn.disabled = true;
-        label.textContent = 'Reporting…';
-        fetch(API_BASE + '/api/report', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: API_KEY, user_message: precedingUserMsg, assistant_message: text }),
-        }).then(function (res) {
-          label.textContent = res.ok ? 'Reported' : 'Failed';
-          btn.classList.add('cg-report-btn--done');
-        }).catch(function () {
-          label.textContent = 'Failed';
-          btn.disabled = false;
-        });
-      });
-
-      el.appendChild(bodyEl);
-      el.appendChild(actionsEl);
-      messagesEl.appendChild(el);
-      if (lastUserMsgEl) scrollMsgToTop(lastUserMsgEl);
-
-      // Typewriter animation
-      startTypewriter(bodyEl, text, function () {
-        bodyEl.innerHTML = markdownLinksToHtml(text);
-        actionsEl.style.display = '';
-      });
-    }
-
-    function startTypewriter(container, text, onDone) {
-      var totalDuration = Math.min(text.length * 14, 4000);
-      var startTime = null;
-      function frame(ts) {
-        if (!startTime) startTime = ts;
-        var progress = Math.min((ts - startTime) / totalDuration, 1);
-        var charCount = Math.floor(progress * text.length);
-        container.innerHTML = markdownLinksToHtml(text.slice(0, charCount));
-        if (progress < 1) {
-          requestAnimationFrame(frame);
-        } else {
-          onDone();
-        }
-      }
-      requestAnimationFrame(frame);
     }
 
     function appendErrorMessage() {
