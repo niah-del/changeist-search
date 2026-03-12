@@ -606,44 +606,6 @@
   background: #F5F5F7;
 }
 
-.cg-quick-btns {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  scrollbar-width: none;
-}
-.cg-quick-btns::-webkit-scrollbar { display: none; }
-
-.cg-quick-btn {
-  flex-shrink: 0;
-  padding: 5px 14px;
-  border-radius: 999px;
-  border: 1.5px solid #d1d5db;
-  background: #fff;
-  color: #374151;
-  font-size: 12.5px;
-  font-family: inherit;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-}
-.cg-quick-btn:hover {
-  background: #1a1a1a;
-  border-color: #1a1a1a;
-  color: #fff;
-}
-
-#changeist-search[data-cg-theme="dark"] .cg-quick-btn {
-  background: #1e1f20;
-  border-color: #3c4043;
-  color: #e8eaed;
-}
-#changeist-search[data-cg-theme="dark"] .cg-quick-btn:hover {
-  background: #e8eaed;
-  border-color: #e8eaed;
-  color: #1a1a1a;
-}
 
 #changeist-search[data-cg-theme="dark"] .cg-chat-form-wrap {
   background: #111111;
