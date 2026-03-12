@@ -113,9 +113,10 @@
     (function () {
       var canvas = container.querySelector('.cg-confetti');
       var ctx = canvas.getContext('2d');
-      var COLORS = ['#ed1869', '#f54d8e', '#fce7f0', '#c48098', '#ffb3cc', '#ff85aa'];
+      var COLORS = ['#ed1869', '#73bf44', '#edc618', '#2eafd7'];
       var SHAPES = ['circle', 'rect', 'star'];
       var COUNT = 28;
+      var MARGIN = 90; // px wide strip on each side
       var particles = [];
 
       function resize() {
@@ -126,9 +127,14 @@
       window.addEventListener('resize', resize);
 
       function makeParticle(randomY) {
+        var side = Math.random() < 0.5 ? 'left' : 'right';
+        var x = side === 'left'
+          ? Math.random() * MARGIN
+          : canvas.width - MARGIN + Math.random() * MARGIN;
         return {
-          x: Math.random() * canvas.width,
+          x: x,
           y: randomY ? Math.random() * canvas.height : -10,
+          side: side,
           r: 3 + Math.random() * 4,
           color: COLORS[Math.floor(Math.random() * COLORS.length)],
           shape: SHAPES[Math.floor(Math.random() * SHAPES.length)],
@@ -136,7 +142,7 @@
           drift: (Math.random() - 0.5) * 0.3,
           wobble: Math.random() * Math.PI * 2,
           wobbleSpeed: 0.01 + Math.random() * 0.02,
-          opacity: 0.25 + Math.random() * 0.35,
+          opacity: 0.3 + Math.random() * 0.4,
           rotation: Math.random() * Math.PI * 2,
           rotSpeed: (Math.random() - 0.5) * 0.01,
         };
@@ -163,6 +169,12 @@
           p.wobble += p.wobbleSpeed;
           p.x += p.drift + Math.sin(p.wobble) * 0.4;
           p.rotation += p.rotSpeed;
+          // Keep within side strip
+          if (p.side === 'left') {
+            p.x = Math.max(0, Math.min(MARGIN, p.x));
+          } else {
+            p.x = Math.max(canvas.width - MARGIN, Math.min(canvas.width, p.x));
+          }
           if (p.y > canvas.height + 10) particles[i] = makeParticle(false);
 
           ctx.save();
