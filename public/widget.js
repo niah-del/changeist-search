@@ -117,6 +117,13 @@
     var messageCount = 0;
     var lastUserMsgEl = null;
 
+    // Auto-scroll: stop following if user scrolls up manually
+    var autoScroll = true;
+    messagesEl.addEventListener('scroll', function () {
+      var distFromBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight;
+      autoScroll = distFromBottom < 60;
+    });
+
     window.addEventListener('beforeunload', function () {
       if (sessionStartTime === null || messageCount === 0) return;
       var duration = Math.round((Date.now() - sessionStartTime) / 1000);
@@ -147,6 +154,7 @@
       displayText = displayText || userText;
       isLoading = true;
       sendBtn.disabled = true;
+      autoScroll = true;
 
       // Transition from welcome screen to chat on first message
       if (chatEl.classList.contains('cg-chat--welcome')) {
@@ -212,6 +220,7 @@
             var step = fullText.length - typedChars > 80 ? 4 : 1;
             typedChars = Math.min(fullText.length, typedChars + step);
             bodyEl.innerHTML = markdownLinksToHtml(fullText.slice(0, typedChars));
+            if (autoScroll) messagesEl.scrollTop = messagesEl.scrollHeight;
           }, 18);
 
           actionsEl.querySelector('.cg-copy-btn').addEventListener('click', function () {
@@ -353,33 +362,8 @@
     }
 
     function scrollMsgToTop(el) {
-      setTimeout(function () {
-        // Find the scroll container
-        var container = null;
-        var node = el.parentElement;
-        while (node && node !== document.documentElement) {
-          var style = window.getComputedStyle(node);
-          var oy = style.overflowY;
-          if ((oy === 'auto' || oy === 'scroll') && node.scrollHeight > node.clientHeight) {
-            container = node;
-            break;
-          }
-          node = node.parentElement;
-        }
-
-        if (container) {
-          // Scroll amount is relative to container's top edge, not viewport top
-          var containerRect = container.getBoundingClientRect();
-          var elRect = el.getBoundingClientRect();
-          var scrollAmount = elRect.top - containerRect.top - 8;
-          if (Math.abs(scrollAmount) < 5) return;
-          container.scrollBy({ top: scrollAmount, behavior: 'smooth' });
-        } else {
-          var amount = el.getBoundingClientRect().top - 24;
-          if (Math.abs(amount) < 5) return;
-          window.scrollBy({ top: amount, behavior: 'smooth' });
-        }
-      }, 50);
+      // offsetTop is relative to messagesEl (its nearest positioned ancestor)
+      messagesEl.scrollTop = el.offsetTop - 8;
     }
 
     // --- Markdown renderer: handles links, bold, italic, numbered + bullet lists ---
