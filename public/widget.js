@@ -341,7 +341,25 @@
     }
 
     function scrollMsgToTop(el) {
-      el.scrollIntoView({ block: 'start', behavior: 'instant' });
+      setTimeout(function () {
+        var rect = el.getBoundingClientRect();
+        var scrollBy = rect.top - 24;
+        if (Math.abs(scrollBy) < 5) return;
+
+        // Walk up to find the actual scrollable container
+        var node = el.parentElement;
+        while (node && node !== document.documentElement) {
+          var style = window.getComputedStyle(node);
+          var oy = style.overflowY;
+          if ((oy === 'auto' || oy === 'scroll') && node.scrollHeight > node.clientHeight) {
+            node.scrollBy({ top: scrollBy, behavior: 'instant' });
+            return;
+          }
+          node = node.parentElement;
+        }
+        // Fallback: page is the scroll container
+        window.scrollBy({ top: scrollBy, behavior: 'instant' });
+      }, 50);
     }
 
     // --- Markdown renderer: handles links, bold, italic, numbered + bullet lists ---
