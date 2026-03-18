@@ -261,9 +261,8 @@ export default async function handler(req, res) {
 
       if (finalMsg.stop_reason === 'tool_use') {
         toolCallCount++;
-        const toolResults = [];
 
-        for (const block of toolUseBlocks) {
+        const toolResults = await Promise.all(toolUseBlocks.map(async (block) => {
           let resultContent = 'No results found.';
           if (block.name === 'search_opportunities') {
             const results = await searchOpportunities({
@@ -280,8 +279,8 @@ export default async function handler(req, res) {
               `${r.title}\n${r.url}\n${r.description || ''}`
             ).join('\n\n') || 'No results found.';
           }
-          toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: resultContent });
-        }
+          return { type: 'tool_result', tool_use_id: block.id, content: resultContent };
+        }));
 
         currentMessages.push({ role: 'assistant', content: finalMsg.content });
         currentMessages.push({ role: 'user', content: toolResults });
