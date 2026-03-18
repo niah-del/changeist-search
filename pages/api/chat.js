@@ -215,14 +215,14 @@ export default async function handler(req, res) {
   };
 
   try {
-    const cappedMessages = messages.slice(-20);
+    const cappedMessages = messages.slice(-10);
     let currentMessages = [...cappedMessages];
     let toolCallCount = 0;
 
     while (true) {
       const stream = anthropic.messages.stream({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1500,
+        max_tokens: 1000,
         system: SYSTEM_PROMPT,
         tools: toolCallCount < 3 ? tools : undefined,
         messages: currentMessages,
