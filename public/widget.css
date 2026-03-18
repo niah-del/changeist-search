@@ -413,7 +413,7 @@
   line-height: 1.1;
   white-space: nowrap;
   margin: 0 0 16px;
-  background: linear-gradient(90deg, #ed1869 0%, #edc618 60%, #73bf44 100%);
+  background: linear-gradient(90deg, #ed1869 0%, #edc618 33%, #2eafd7 66%, #73bf44 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
