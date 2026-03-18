@@ -492,6 +492,9 @@
   flex-direction: column;
   gap: 16px;
   overflow-anchor: none;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .cg-messages::-webkit-scrollbar { width: 4px; }
@@ -512,7 +515,7 @@
 /* Light: user bubble */
 .cg-msg--user {
   align-self: flex-end;
-  background: #1a1a1a;
+  background: #ed1869;
   color: #fff;
   border-bottom-right-radius: 4px;
 }
