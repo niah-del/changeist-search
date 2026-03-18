@@ -461,16 +461,6 @@
   border-radius: 0;
   overflow: hidden;
   background: #F5F5F7;
-  box-shadow: inset 3px 0 0 #ed1869, inset -3px 0 0 #ed1869;
-  animation: cg-wire 12s linear infinite;
-}
-
-@keyframes cg-wire {
-  0%   { box-shadow: inset 3px 0 0 #ed1869, inset -3px 0 0 #ed1869; }
-  25%  { box-shadow: inset 3px 0 0 #edc618, inset -3px 0 0 #edc618; }
-  50%  { box-shadow: inset 3px 0 0 #2eafd7, inset -3px 0 0 #2eafd7; }
-  75%  { box-shadow: inset 3px 0 0 #73bf44, inset -3px 0 0 #73bf44; }
-  100% { box-shadow: inset 3px 0 0 #ed1869, inset -3px 0 0 #ed1869; }
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-chat {
