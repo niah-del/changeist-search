@@ -562,6 +562,10 @@
   box-shadow: 0 0 10px rgba(237, 24, 105, 0.3), 0 0 20px rgba(237, 24, 105, 0.15);
 }
 
+.cg-msg-body {
+  transition: opacity 0.15s ease;
+}
+
 /* Assistant — no bubble, full width, plain text */
 .cg-msg--assistant {
   align-self: flex-start;

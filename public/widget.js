@@ -241,29 +241,7 @@
             thinkingEl.classList.remove('cg-thinking-visible');
           }
 
-          var fullText = '';       // all text received from SSE so far
-          var typedChars = 0;     // how many chars have been rendered
-          var streamDone = false;
-
-          var typingTimer = setInterval(function () {
-            if (typedChars >= fullText.length) {
-              if (streamDone) {
-                clearInterval(typingTimer);
-                // Final render
-                bodyEl.innerHTML = markdownLinksToHtml(fullText);
-                actionsEl.style.display = '';
-                messages.push({ role: 'assistant', content: fullText });
-                isLoading = false;
-                sendBtn.disabled = false;
-              }
-              return;
-            }
-            // Reveal chars — speed up if buffer is large
-            var step = fullText.length - typedChars > 80 ? 4 : 1;
-            typedChars = Math.min(fullText.length, typedChars + step);
-            bodyEl.innerHTML = markdownLinksToHtml(fullText.slice(0, typedChars));
-            if (autoScroll) messagesEl.scrollTop = messagesEl.scrollHeight;
-          }, 18);
+          var fullText = '';
 
           actionsEl.querySelector('.cg-copy-btn').addEventListener('click', function () {
             var btn = this;
@@ -333,14 +311,19 @@
                     if (lastEvent === 'chunk') {
                       if (thinkingEl.style.display !== 'none') stopThinkingPhrases();
                       fullText += data.text;
+                      bodyEl.innerHTML = markdownLinksToHtml(fullText);
+                      if (autoScroll) messagesEl.scrollTop = messagesEl.scrollHeight;
                     } else if (lastEvent === 'thinking') {
                       thinkingEl.style.display = 'flex';
                       setTimeout(function () { thinkingEl.classList.add('cg-thinking-visible'); }, 10);
                       startThinkingPhrases();
                     } else if (lastEvent === 'done') {
-                      streamDone = true;
+                      bodyEl.innerHTML = markdownLinksToHtml(fullText);
+                      actionsEl.style.display = '';
+                      messages.push({ role: 'assistant', content: fullText });
+                      isLoading = false;
+                      sendBtn.disabled = false;
                     } else if (lastEvent === 'error') {
-                      clearInterval(typingTimer);
                       appendErrorMessage();
                       messages.pop();
                       isLoading = false;
@@ -353,7 +336,6 @@
               readChunk();
             }).catch(function (err) {
               console.error('[Changeist]', err);
-              clearInterval(typingTimer);
               appendErrorMessage();
               messages.pop();
               isLoading = false;
