@@ -489,7 +489,7 @@
   overflow-y: auto;
   position: relative;
   /* Center content column like Gemini — background fills full width */
-  padding: 24px max(20px, calc((100% - 760px) / 2)) 12px;
+  padding: 24px max(20px, calc((100% - 760px) / 2)) 80px;
   display: flex;
   flex-direction: column;
   gap: 16px;
