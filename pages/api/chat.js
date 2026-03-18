@@ -261,6 +261,7 @@ export default async function handler(req, res) {
 
       if (finalMsg.stop_reason === 'tool_use') {
         toolCallCount++;
+        sendEvent('thinking', {});
 
         const toolResults = await Promise.all(toolUseBlocks.map(async (block) => {
           let resultContent = 'No results found.';

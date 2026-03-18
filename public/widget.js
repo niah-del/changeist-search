@@ -199,6 +199,11 @@
               '<span class="cg-report-label">Report</span>' +
             '</button>';
 
+          var thinkingEl = document.createElement('div');
+          thinkingEl.className = 'cg-inline-thinking';
+          thinkingEl.style.display = 'none';
+          thinkingEl.innerHTML = '<span></span><span></span><span></span>';
+
           var fullText = '';       // all text received from SSE so far
           var typedChars = 0;     // how many chars have been rendered
           var streamDone = false;
@@ -255,6 +260,7 @@
           });
 
           el.appendChild(bodyEl);
+          el.appendChild(thinkingEl);
           el.appendChild(actionsEl);
           messagesEl.appendChild(el);
           if (lastUserMsgEl) scrollMsgToTop(lastUserMsgEl);
@@ -285,7 +291,10 @@
                   try {
                     var data = JSON.parse(line.slice(6));
                     if (lastEvent === 'chunk') {
+                      thinkingEl.style.display = 'none';
                       fullText += data.text;
+                    } else if (lastEvent === 'thinking') {
+                      thinkingEl.style.display = 'flex';
                     } else if (lastEvent === 'done') {
                       streamDone = true;
                     } else if (lastEvent === 'error') {
