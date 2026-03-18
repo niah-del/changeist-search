@@ -77,10 +77,6 @@
     // --- Build the chat widget HTML ---
     container.innerHTML =
       '<div class="cg-widget cg-chat cg-chat--welcome">' +
-        '<div class="cg-orb cg-orb--tl" aria-hidden="true"></div>' +
-        '<div class="cg-orb cg-orb--tr" aria-hidden="true"></div>' +
-        '<div class="cg-orb cg-orb--bl" aria-hidden="true"></div>' +
-        '<div class="cg-orb cg-orb--br" aria-hidden="true"></div>' +
         '<div class="cg-welcome">' +
           '<div class="cg-welcome-inner">' +
             '<p class="cg-welcome-tagline">Link to a Path.</p>' +
