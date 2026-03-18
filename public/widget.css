@@ -418,7 +418,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: cg-text-shimmer 6s linear infinite;
+  animation: cg-text-shimmer 12s linear infinite;
 }
 
 @keyframes cg-text-shimmer {
