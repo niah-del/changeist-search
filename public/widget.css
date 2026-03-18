@@ -413,10 +413,7 @@
   line-height: 1.1;
   white-space: nowrap;
   margin: 0 0 16px;
-  background: linear-gradient(90deg, #ed1869 0%, #ed1869 18%, #edc618 32%, #edc618 48%, #2eafd7 62%, #2eafd7 78%, #73bf44 92%, #73bf44 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #111;
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-welcome-headline {
