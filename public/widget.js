@@ -81,7 +81,7 @@
           '<div class="cg-welcome-inner">' +
             '<p class="cg-welcome-hi">Hi, Friend!</p>' +
             '<p class="cg-welcome-headline">Ready for an Adventure?</p>' +
-            '<p class="cg-welcome-sub">I\'m Link! Part guide, part adventure-finder.<br>Give me your age, city, and what you\'re into and I\'ll track down volunteer gigs, internships, events and even scholarships.</p>' +
+            '<p class="cg-welcome-sub">I\'m Linkist! Part guide, part adventure-finder.<br>Give me your age, city, and what you\'re into and I\'ll track down volunteer gigs, internships, events and even scholarships.</p>' +
           '</div>' +
         '</div>' +
         '<div class="cg-messages" role="log" aria-live="polite" aria-label="Conversation"></div>' +
