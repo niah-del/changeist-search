@@ -383,6 +383,9 @@
 /* Remove divider line on input bar during welcome state */
 .cg-chat--welcome .cg-chat-form-wrap {
   border-top: none;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .cg-welcome-inner {
