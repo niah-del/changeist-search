@@ -543,7 +543,7 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: #fff;
+  background: #fde8f1;
   color: #ed1869;
   font-family: 'Lato', sans-serif;
   font-size: 15px;
@@ -552,8 +552,8 @@
   align-items: center;
   justify-content: center;
   margin-top: 2px;
-  border: 2px solid #ed1869;
-  box-shadow: 0 0 0 3px rgba(237, 24, 105, 0.2), 0 0 10px rgba(237, 24, 105, 0.25);
+  border: none;
+  box-shadow: 0 0 10px rgba(237, 24, 105, 0.3), 0 0 20px rgba(237, 24, 105, 0.15);
 }
 
 /* Assistant — no bubble, full width, plain text */
