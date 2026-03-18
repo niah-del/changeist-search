@@ -199,10 +199,40 @@
               '<span class="cg-report-label">Report</span>' +
             '</button>';
 
+          var thinkingPhrases = [
+            'researching…', 'meandering…', 'doodling…', 'snooping around…',
+            'connecting dots…', 'doing my homework…', 'poking around…',
+            'spelunking…', 'following leads…', 'asking around…',
+            'on the case…', 'investigating…', 'checking the vibes…',
+            'rummaging…', 'hunting it down…', 'on a quest…',
+            'digging deep…', 'sniffing it out…', 'on the loose…'
+          ];
           var thinkingEl = document.createElement('div');
           thinkingEl.className = 'cg-inline-thinking';
           thinkingEl.style.display = 'none';
-          thinkingEl.innerHTML = '<span></span><span></span><span></span>';
+          thinkingEl.innerHTML = '<span class="cg-thinking-text"></span>';
+          var thinkingTextEl = thinkingEl.querySelector('.cg-thinking-text');
+          var thinkingPhraseTimer = null;
+
+          function startThinkingPhrases() {
+            var idx = Math.floor(Math.random() * thinkingPhrases.length);
+            thinkingTextEl.textContent = thinkingPhrases[idx];
+            thinkingPhraseTimer = setInterval(function () {
+              thinkingEl.classList.remove('cg-thinking-visible');
+              setTimeout(function () {
+                idx = (idx + 1) % thinkingPhrases.length;
+                thinkingTextEl.textContent = thinkingPhrases[idx];
+                thinkingEl.classList.add('cg-thinking-visible');
+              }, 300);
+            }, 2200);
+          }
+
+          function stopThinkingPhrases() {
+            clearInterval(thinkingPhraseTimer);
+            thinkingPhraseTimer = null;
+            thinkingEl.style.display = 'none';
+            thinkingEl.classList.remove('cg-thinking-visible');
+          }
 
           var fullText = '';       // all text received from SSE so far
           var typedChars = 0;     // how many chars have been rendered
@@ -291,10 +321,12 @@
                   try {
                     var data = JSON.parse(line.slice(6));
                     if (lastEvent === 'chunk') {
-                      thinkingEl.style.display = 'none';
+                      if (thinkingEl.style.display !== 'none') stopThinkingPhrases();
                       fullText += data.text;
                     } else if (lastEvent === 'thinking') {
                       thinkingEl.style.display = 'flex';
+                      setTimeout(function () { thinkingEl.classList.add('cg-thinking-visible'); }, 10);
+                      startThinkingPhrases();
                     } else if (lastEvent === 'done') {
                       streamDone = true;
                     } else if (lastEvent === 'error') {
