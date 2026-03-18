@@ -669,6 +669,13 @@
   overflow: hidden;
   background: #ffffff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+  border: 1.5px solid transparent;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cg-chat-form:focus-within {
+  border-color: rgba(237, 24, 105, 0.45);
+  box-shadow: 0 0 0 3px rgba(237, 24, 105, 0.12), 0 2px 8px rgba(0, 0, 0, 0.10);
 }
 
 #changeist-search[data-cg-theme="dark"] .cg-chat-form {
