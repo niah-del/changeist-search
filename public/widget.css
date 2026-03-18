@@ -493,8 +493,8 @@
   gap: 16px;
   overflow-anchor: none;
   background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .cg-messages::-webkit-scrollbar { width: 4px; }
@@ -649,8 +649,8 @@
   padding: 10px max(16px, calc((100% - 760px) / 2)) 12px;
   border-top: none;
   background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 
@@ -808,8 +808,8 @@
   justify-content: flex-end;
   border-top: none;
   background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .cg-footer-group {
