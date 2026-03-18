@@ -25,7 +25,7 @@
   })();
 
   var API_KEY = scriptTag.getAttribute('data-api-key') || '';
-  var PLACEHOLDER = scriptTag.getAttribute('data-placeholder') || 'What kind of opportunity are you looking for?';
+  var PLACEHOLDER = scriptTag.getAttribute('data-placeholder') || 'Let\'s find something awesome!';
   var THEME = scriptTag.getAttribute('data-theme') || 'light';
 
   var scriptSrc = scriptTag.src || '';
