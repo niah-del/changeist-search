@@ -180,6 +180,13 @@
 
           // Build assistant message element
           var precedingUserMsg = userText;
+          var row = document.createElement('div');
+          row.className = 'cg-msg-row';
+
+          var avatarEl = document.createElement('div');
+          avatarEl.className = 'cg-link-avatar';
+          avatarEl.textContent = 'L';
+
           var el = document.createElement('div');
           el.className = 'cg-msg cg-msg--assistant';
 
@@ -292,8 +299,11 @@
           el.appendChild(bodyEl);
           el.appendChild(thinkingEl);
           el.appendChild(actionsEl);
-          messagesEl.appendChild(el);
+          row.appendChild(avatarEl);
+          row.appendChild(el);
+          messagesEl.appendChild(row);
           if (lastUserMsgEl) scrollMsgToTop(lastUserMsgEl);
+
 
           // Read SSE stream
           var reader = response.body.getReader();
