@@ -125,6 +125,68 @@
       autoScroll = distFromBottom < 60;
     });
 
+    // --- Collision animation ---
+    var brandColors = ['#ed1869', '#73bf44', '#edc618', '#2eafd7'];
+
+    function runCollision() {
+      var w = chatEl.offsetWidth;
+      var h = chatEl.offsetHeight;
+      if (!w || !h) return;
+
+      var c1 = brandColors[Math.floor(Math.random() * 4)];
+      var c2;
+      do { c2 = brandColors[Math.floor(Math.random() * 4)]; } while (c2 === c1);
+
+      var y = h * (0.15 + Math.random() * 0.7);
+      var midX = w / 2;
+
+      function makeDot(color, fromLeft) {
+        var d = document.createElement('div');
+        d.style.cssText = 'position:absolute;width:7px;height:7px;border-radius:50%;background:' + color + ';top:' + (y - 3.5) + 'px;' + (fromLeft ? 'left:-7px;' : 'right:-7px;') + 'z-index:999;pointer-events:none;transition:transform 1.4s cubic-bezier(0.4,0,0.8,1),opacity 0.15s;opacity:1;';
+        chatEl.appendChild(d);
+        return d;
+      }
+
+      var dotL = makeDot(c1, true);
+      var dotR = makeDot(c2, false);
+
+      requestAnimationFrame(function () {
+        dotL.style.transform = 'translateX(' + (midX) + 'px)';
+        dotR.style.transform = 'translateX(-' + (midX) + 'px)';
+      });
+
+      setTimeout(function () {
+        dotL.remove();
+        dotR.remove();
+
+        var sparkColors = [c1, c2, brandColors[Math.floor(Math.random() * 4)], brandColors[Math.floor(Math.random() * 4)]];
+        var numSparks = 10;
+        for (var i = 0; i < numSparks; i++) {
+          (function (i) {
+            var spark = document.createElement('div');
+            var angle = (i / numSparks) * 360;
+            var dist = 18 + Math.random() * 18;
+            var tx = Math.cos(angle * Math.PI / 180) * dist;
+            var ty = Math.sin(angle * Math.PI / 180) * dist;
+            var size = 3 + Math.random() * 3;
+            spark.style.cssText = 'position:absolute;width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + sparkColors[i % sparkColors.length] + ';left:' + midX + 'px;top:' + y + 'px;z-index:999;pointer-events:none;transition:transform 0.55s ease-out,opacity 0.55s ease-out;';
+            chatEl.appendChild(spark);
+            requestAnimationFrame(function () {
+              spark.style.transform = 'translate(' + tx + 'px,' + ty + 'px)';
+              spark.style.opacity = '0';
+            });
+            setTimeout(function () { spark.remove(); }, 600);
+          })(i);
+        }
+      }, 1400);
+    }
+
+    function scheduleCollision() {
+      runCollision();
+      setTimeout(scheduleCollision, 6000 + Math.random() * 4000);
+    }
+    setTimeout(scheduleCollision, 2000);
+
     window.addEventListener('beforeunload', function () {
       if (sessionStartTime === null || messageCount === 0) return;
       var duration = Math.round((Date.now() - sessionStartTime) / 1000);
