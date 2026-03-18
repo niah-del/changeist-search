@@ -648,7 +648,9 @@
 .cg-chat-form-wrap {
   padding: 10px max(16px, calc((100% - 760px) / 2)) 12px;
   border-top: none;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 
@@ -804,7 +806,10 @@
   padding: 6px 16px 10px;
   display: flex;
   justify-content: flex-end;
-  border-top: 1px solid #e5e7eb;
+  border-top: none;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .cg-footer-group {
