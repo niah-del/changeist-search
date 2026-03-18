@@ -292,8 +292,6 @@
           function readChunk() {
             reader.read().then(function (result) {
               if (result.done) {
-                // Stream closed — let the typing timer finish naturally
-                streamDone = true;
                 return;
               }
 
