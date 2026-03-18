@@ -433,7 +433,7 @@
 }
 
 @media (max-width: 480px) {
-  .cg-welcome-hi { font-size: 22px; }
+  .cg-welcome-hi { font-size: 38px; font-weight: 700; }
   .cg-welcome-headline { font-size: 38px; white-space: normal; font-weight: 700; }
   .cg-welcome-sub { font-size: 16px; }
 }
