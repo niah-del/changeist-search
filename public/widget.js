@@ -77,6 +77,10 @@
     // --- Build the chat widget HTML ---
     container.innerHTML =
       '<div class="cg-widget cg-chat cg-chat--welcome">' +
+        '<div class="cg-orb cg-orb--tl" aria-hidden="true"></div>' +
+        '<div class="cg-orb cg-orb--tr" aria-hidden="true"></div>' +
+        '<div class="cg-orb cg-orb--bl" aria-hidden="true"></div>' +
+        '<div class="cg-orb cg-orb--br" aria-hidden="true"></div>' +
         '<div class="cg-welcome">' +
           '<div class="cg-welcome-inner">' +
             '<p class="cg-welcome-tagline">Link to a Path.</p>' +
@@ -124,72 +128,6 @@
       var distFromBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight;
       autoScroll = distFromBottom < 60;
     });
-
-    // --- Collision animation ---
-    var brandColors = ['#ed1869', '#73bf44', '#edc618', '#2eafd7'];
-
-    function getColor() { return brandColors[Math.floor(Math.random() * 4)]; }
-    function getDiffColor(c) { var c2; do { c2 = getColor(); } while (c2 === c); return c2; }
-
-    function spawnCollision(xStart1, xStart2, xMid, y, color1, color2) {
-      var size = 7;
-      function makeDot(x, color) {
-        var d = document.createElement('div');
-        d.style.cssText = 'position:absolute;width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + color + ';left:' + x + 'px;top:' + (y - size / 2) + 'px;z-index:999;pointer-events:none;transition:transform 1.2s cubic-bezier(0.4,0,0.8,1);';
-        chatEl.appendChild(d);
-        return d;
-      }
-      var d1 = makeDot(xStart1, color1);
-      var d2 = makeDot(xStart2, color2);
-      requestAnimationFrame(function () {
-        d1.style.transform = 'translateX(' + (xMid - xStart1) + 'px)';
-        d2.style.transform = 'translateX(' + (xMid - xStart2) + 'px)';
-      });
-      setTimeout(function () {
-        d1.remove(); d2.remove();
-        var sparkColors = [color1, color2, getColor(), getColor()];
-        for (var i = 0; i < 10; i++) {
-          (function (i) {
-            var spark = document.createElement('div');
-            var angle = (i / 10) * 360;
-            var dist = 14 + Math.random() * 12;
-            var tx = Math.cos(angle * Math.PI / 180) * dist;
-            var ty = Math.sin(angle * Math.PI / 180) * dist;
-            var sz = 2.5 + Math.random() * 2.5;
-            spark.style.cssText = 'position:absolute;width:' + sz + 'px;height:' + sz + 'px;border-radius:50%;background:' + sparkColors[i % 4] + ';left:' + xMid + 'px;top:' + y + 'px;z-index:999;pointer-events:none;transition:transform 0.5s ease-out,opacity 0.5s ease-out;';
-            chatEl.appendChild(spark);
-            requestAnimationFrame(function () {
-              spark.style.transform = 'translate(' + tx + 'px,' + ty + 'px)';
-              spark.style.opacity = '0';
-            });
-            setTimeout(function () { spark.remove(); }, 600);
-          })(i);
-        }
-      }, 1300);
-    }
-
-    function runCollision() {
-      var w = chatEl.offsetWidth;
-      var h = chatEl.offsetHeight;
-      if (!w || !h) return;
-      var zone = 64; // collision zone width on each side
-
-      // Left side collision
-      var c1L = getColor(); var c2L = getDiffColor(c1L);
-      var yL = h * (0.15 + Math.random() * 0.7);
-      spawnCollision(0, zone - 7, zone / 2, yL, c1L, c2L);
-
-      // Right side collision
-      var c1R = getColor(); var c2R = getDiffColor(c1R);
-      var yR = h * (0.15 + Math.random() * 0.7);
-      spawnCollision(w - zone, w - 7, w - zone / 2, yR, c1R, c2R);
-    }
-
-    function scheduleCollision() {
-      runCollision();
-      setTimeout(scheduleCollision, 6000 + Math.random() * 4000);
-    }
-    setTimeout(scheduleCollision, 2000);
 
     window.addEventListener('beforeunload', function () {
       if (sessionStartTime === null || messageCount === 0) return;
