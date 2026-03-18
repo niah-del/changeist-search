@@ -128,48 +128,35 @@
     // --- Collision animation ---
     var brandColors = ['#ed1869', '#73bf44', '#edc618', '#2eafd7'];
 
-    function runCollision() {
-      var w = chatEl.offsetWidth;
-      var h = chatEl.offsetHeight;
-      if (!w || !h) return;
+    function getColor() { return brandColors[Math.floor(Math.random() * 4)]; }
+    function getDiffColor(c) { var c2; do { c2 = getColor(); } while (c2 === c); return c2; }
 
-      var c1 = brandColors[Math.floor(Math.random() * 4)];
-      var c2;
-      do { c2 = brandColors[Math.floor(Math.random() * 4)]; } while (c2 === c1);
-
-      var y = h * (0.15 + Math.random() * 0.7);
-      var midX = w / 2;
-
-      function makeDot(color, fromLeft) {
+    function spawnCollision(xStart1, xStart2, xMid, y, color1, color2) {
+      var size = 7;
+      function makeDot(x, color) {
         var d = document.createElement('div');
-        d.style.cssText = 'position:absolute;width:7px;height:7px;border-radius:50%;background:' + color + ';top:' + (y - 3.5) + 'px;' + (fromLeft ? 'left:-7px;' : 'right:-7px;') + 'z-index:999;pointer-events:none;transition:transform 1.4s cubic-bezier(0.4,0,0.8,1),opacity 0.15s;opacity:1;';
+        d.style.cssText = 'position:absolute;width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + color + ';left:' + x + 'px;top:' + (y - size / 2) + 'px;z-index:999;pointer-events:none;transition:transform 1.2s cubic-bezier(0.4,0,0.8,1);';
         chatEl.appendChild(d);
         return d;
       }
-
-      var dotL = makeDot(c1, true);
-      var dotR = makeDot(c2, false);
-
+      var d1 = makeDot(xStart1, color1);
+      var d2 = makeDot(xStart2, color2);
       requestAnimationFrame(function () {
-        dotL.style.transform = 'translateX(' + (midX) + 'px)';
-        dotR.style.transform = 'translateX(-' + (midX) + 'px)';
+        d1.style.transform = 'translateX(' + (xMid - xStart1) + 'px)';
+        d2.style.transform = 'translateX(' + (xMid - xStart2) + 'px)';
       });
-
       setTimeout(function () {
-        dotL.remove();
-        dotR.remove();
-
-        var sparkColors = [c1, c2, brandColors[Math.floor(Math.random() * 4)], brandColors[Math.floor(Math.random() * 4)]];
-        var numSparks = 10;
-        for (var i = 0; i < numSparks; i++) {
+        d1.remove(); d2.remove();
+        var sparkColors = [color1, color2, getColor(), getColor()];
+        for (var i = 0; i < 10; i++) {
           (function (i) {
             var spark = document.createElement('div');
-            var angle = (i / numSparks) * 360;
-            var dist = 18 + Math.random() * 18;
+            var angle = (i / 10) * 360;
+            var dist = 14 + Math.random() * 12;
             var tx = Math.cos(angle * Math.PI / 180) * dist;
             var ty = Math.sin(angle * Math.PI / 180) * dist;
-            var size = 3 + Math.random() * 3;
-            spark.style.cssText = 'position:absolute;width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + sparkColors[i % sparkColors.length] + ';left:' + midX + 'px;top:' + y + 'px;z-index:999;pointer-events:none;transition:transform 0.55s ease-out,opacity 0.55s ease-out;';
+            var sz = 2.5 + Math.random() * 2.5;
+            spark.style.cssText = 'position:absolute;width:' + sz + 'px;height:' + sz + 'px;border-radius:50%;background:' + sparkColors[i % 4] + ';left:' + xMid + 'px;top:' + y + 'px;z-index:999;pointer-events:none;transition:transform 0.5s ease-out,opacity 0.5s ease-out;';
             chatEl.appendChild(spark);
             requestAnimationFrame(function () {
               spark.style.transform = 'translate(' + tx + 'px,' + ty + 'px)';
@@ -178,7 +165,24 @@
             setTimeout(function () { spark.remove(); }, 600);
           })(i);
         }
-      }, 1400);
+      }, 1300);
+    }
+
+    function runCollision() {
+      var w = chatEl.offsetWidth;
+      var h = chatEl.offsetHeight;
+      if (!w || !h) return;
+      var zone = 64; // collision zone width on each side
+
+      // Left side collision
+      var c1L = getColor(); var c2L = getDiffColor(c1L);
+      var yL = h * (0.15 + Math.random() * 0.7);
+      spawnCollision(0, zone - 7, zone / 2, yL, c1L, c2L);
+
+      // Right side collision
+      var c1R = getColor(); var c2R = getDiffColor(c1R);
+      var yR = h * (0.15 + Math.random() * 0.7);
+      spawnCollision(w - zone, w - 7, w - zone / 2, yR, c1R, c2R);
     }
 
     function scheduleCollision() {
