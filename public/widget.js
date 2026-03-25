@@ -353,6 +353,25 @@
         });
     }
 
+    // --- Click tracking ---
+    messagesEl.addEventListener('click', function (e) {
+      var a = e.target.closest('a[href]');
+      if (!a) return;
+      var href = a.getAttribute('href');
+      if (!href || !href.startsWith('http')) return;
+      // Find listing_id by matching URL against known DB results
+      // We track by sending the URL and last user query; server resolves the listing_id
+      var lastUserQuery = '';
+      for (var i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].role === 'user') { lastUserQuery = messages[i].content; break; }
+      }
+      fetch(API_BASE + '/api/listing-click', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: API_KEY, url: href, query: lastUserQuery }),
+      }).catch(function () {});
+    });
+
     // --- Message rendering ---
     function appendUserMessage(text) {
       var el = document.createElement('div');

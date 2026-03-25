@@ -269,6 +269,7 @@ export default async function handler(req, res) {
             const results = await searchOpportunities({
               query: block.input.query,
               type: block.input.type || '',
+              embedKeyId,
             });
             resultContent = JSON.stringify(results.slice(0, 8));
           } else if (block.name === 'research_organization') {
