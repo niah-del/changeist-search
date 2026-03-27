@@ -96,6 +96,10 @@
         '</div>' +
         '<div class="cg-footer">' +
           '<div class="cg-footer-group">' +
+            '<button class="cg-save-report-btn" style="display:none" aria-label="Save conversation report">' +
+              '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>' +
+              ' Save Report' +
+            '</button>' +
             '<a class="cg-powered" href="https://changeist.org" target="_blank" rel="noopener">Powered by Changeist</a>' +
           '</div>' +
         '</div>' +
@@ -107,6 +111,29 @@
     var input = container.querySelector('.cg-chat-input');
     var messagesEl = container.querySelector('.cg-messages');
     var sendBtn = container.querySelector('.cg-chat-btn');
+    var saveReportBtn = container.querySelector('.cg-save-report-btn');
+
+    saveReportBtn.addEventListener('click', function () {
+      var btn = saveReportBtn;
+      btn.disabled = true;
+      btn.textContent = 'Generating…';
+      fetch(API_BASE + '/api/conversation-export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: API_KEY, messages: messages }),
+      }).then(function (res) { return res.json(); }).then(function (data) {
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Save Report';
+        var win = window.open('', '_blank');
+        win.document.write(data.html);
+        win.document.close();
+        win.focus();
+        setTimeout(function () { win.print(); }, 600);
+      }).catch(function () {
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Save Report';
+      });
+    });
 
     // Conversation history (sent to API on each turn)
     var messages = [];
@@ -201,6 +228,18 @@
               '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
               '<span class="cg-copy-label">Copy</span>' +
             '</button>' +
+            '<button class="cg-share-email-btn" aria-label="Share via email" title="Share via email">' +
+              '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>' +
+              '<span>Email</span>' +
+            '</button>' +
+            '<button class="cg-share-sms-btn" aria-label="Share via text" title="Share via text">' +
+              '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' +
+              '<span>Text</span>' +
+            '</button>' +
+            '<button class="cg-share-download-btn" aria-label="Download as file" title="Download as text file">' +
+              '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
+              '<span>Save</span>' +
+            '</button>' +
             '<button class="cg-report-btn" aria-label="Report message" title="Report this response">' +
               '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>' +
               '<span class="cg-report-label">Report</span>' +
@@ -254,6 +293,27 @@
                 btn.classList.remove('cg-copy-btn--done');
               }, 2000);
             });
+          });
+
+          actionsEl.querySelector('.cg-share-email-btn').addEventListener('click', function () {
+            var subject = encodeURIComponent('From Linkist — Opportunity for you');
+            var body = encodeURIComponent(fullText);
+            window.open('mailto:?subject=' + subject + '&body=' + body, '_blank');
+          });
+
+          actionsEl.querySelector('.cg-share-sms-btn').addEventListener('click', function () {
+            var body = encodeURIComponent(fullText);
+            window.open('sms:?body=' + body, '_blank');
+          });
+
+          actionsEl.querySelector('.cg-share-download-btn').addEventListener('click', function () {
+            var blob = new Blob([fullText], { type: 'text/plain' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'linkist-recommendation.txt';
+            a.click();
+            URL.revokeObjectURL(url);
           });
 
           actionsEl.querySelector('.cg-report-btn').addEventListener('click', function () {
@@ -319,6 +379,7 @@
                       bodyEl.innerHTML = markdownLinksToHtml(fullText);
                       actionsEl.style.display = '';
                       messages.push({ role: 'assistant', content: fullText });
+                      saveReportBtn.style.display = '';
                       isLoading = false;
                       sendBtn.disabled = false;
                     } else if (lastEvent === 'error') {

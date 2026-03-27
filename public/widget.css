@@ -769,6 +769,9 @@
 }
 
 .cg-copy-btn,
+.cg-share-email-btn,
+.cg-share-sms-btn,
+.cg-share-download-btn,
 .cg-report-btn {
   display: inline-flex;
   align-items: center;
@@ -809,7 +812,17 @@
   cursor: default;
 }
 
+.cg-share-email-btn:hover,
+.cg-share-sms-btn:hover,
+.cg-share-download-btn:hover {
+  color: #4b5563;
+  border-color: #9ca3af;
+}
+
 #changeist-search[data-cg-theme="dark"] .cg-copy-btn,
+#changeist-search[data-cg-theme="dark"] .cg-share-email-btn,
+#changeist-search[data-cg-theme="dark"] .cg-share-sms-btn,
+#changeist-search[data-cg-theme="dark"] .cg-share-download-btn,
 #changeist-search[data-cg-theme="dark"] .cg-report-btn {
   border-color: #3c4043;
   color: #5f6368;
@@ -836,6 +849,33 @@
   height: 45px;
   object-fit: contain;
   display: block;
+}
+
+/* --- Save Report button --- */
+.cg-save-report-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid #ed1869;
+  border-radius: 999px;
+  background: transparent;
+  color: #ed1869;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  align-self: flex-end;
+}
+
+.cg-save-report-btn:hover {
+  background: #ed1869;
+  color: #fff;
+}
+
+.cg-save-report-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 /* --- Footer --- */
