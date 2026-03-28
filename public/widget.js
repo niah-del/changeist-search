@@ -300,12 +300,12 @@
 
           actionsEl.querySelector('.cg-share-email-btn').addEventListener('click', function () {
             var subject = encodeURIComponent('From Linkist — Opportunity for you');
-            var body = encodeURIComponent(fullText);
+            var body = encodeURIComponent(markdownToPlainText(fullText));
             window.open('mailto:?subject=' + subject + '&body=' + body, '_blank');
           });
 
           actionsEl.querySelector('.cg-share-sms-btn').addEventListener('click', function () {
-            var body = encodeURIComponent(fullText);
+            var body = encodeURIComponent(markdownToPlainText(fullText));
             window.open('sms:?body=' + body, '_blank');
           });
 
@@ -537,6 +537,22 @@
       if (inUl) html += '</ul>';
       if (inOl) html += '</ol>';
       return html;
+    }
+
+    // --- Convert markdown to clean plain text for email/SMS sharing ---
+    function markdownToPlainText(text) {
+      return text
+        // **[Title](url)** → Title\nurl
+        .replace(/\*{1,2}\[([^\]]+)\]\((https?:\/\/[^)]+)\)\*{0,2}/g, '$1\n$2')
+        // [Title](url) → Title\nurl
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '$1\n$2')
+        // Remove bold/italic markers
+        .replace(/\*{1,2}([^*]+)\*{1,2}/g, '$1')
+        // Remove ✓ verified marker
+        .replace(/ ✓/g, '')
+        // Clean up extra blank lines
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
     }
 
     // --- Utilities ---
