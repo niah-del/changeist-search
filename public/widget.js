@@ -309,15 +309,6 @@
             window.open('sms:?body=' + body, '_blank');
           });
 
-          actionsEl.querySelector('.cg-share-download-btn').addEventListener('click', function () {
-            var blob = new Blob([fullText], { type: 'text/plain' });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = 'linkist-recommendation.txt';
-            a.click();
-            URL.revokeObjectURL(url);
-          });
 
           actionsEl.querySelector('.cg-report-btn').addEventListener('click', function () {
             var btn = this;
