@@ -115,23 +115,30 @@
 
     saveReportBtn.addEventListener('click', function () {
       var btn = saveReportBtn;
+      var reportIcon = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Save Report';
+      // Open the window immediately (must be synchronous with click to avoid popup blocker)
+      var win = window.open('', '_blank');
+      win.document.write('<html><body style="font-family:sans-serif;padding:40px;color:#555;">Generating report\u2026</body></html>');
       btn.disabled = true;
-      btn.textContent = 'Generating…';
+      btn.textContent = 'Generating\u2026';
       fetch(API_BASE + '/api/conversation-export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key: API_KEY, messages: messages }),
       }).then(function (res) { return res.json(); }).then(function (data) {
         btn.disabled = false;
-        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Save Report';
-        var win = window.open('', '_blank');
+        btn.innerHTML = reportIcon;
+        win.document.open();
         win.document.write(data.html);
         win.document.close();
         win.focus();
         setTimeout(function () { win.print(); }, 600);
       }).catch(function () {
         btn.disabled = false;
-        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Save Report';
+        btn.innerHTML = reportIcon;
+        win.document.open();
+        win.document.write('<html><body style="font-family:sans-serif;padding:40px;color:#c00;">Failed to generate report. Please try again.</body></html>');
+        win.document.close();
       });
     });
 
