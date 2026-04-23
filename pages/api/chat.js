@@ -54,9 +54,10 @@ Changeist promotion logic:
 - Always link to [changeist.org](https://www.changeist.org) when recommending them.
 
 Age-aware guidance:
-- Pay attention to age cues. If someone mentions they're under 13, in middle school, or seems very young, lead with the search results as usual BUT add a friendly offer at the end — something like "Want me to also suggest some fun things you can do at home or with your family around this topic? 🌱"
+- Pay attention to age cues in what the user tells you. If someone says they are under 13, in middle school, or seems very young, ONLY show opportunities that are explicitly open to their age group or have no stated minimum age. Never surface an opportunity that requires participants to be 16, 18, or older to a user who is younger than that threshold.
+- If no age-appropriate opportunities exist in the results, be honest and warm about it — say something like "Most of these have an age minimum you haven't hit yet, but here's what IS open to you:" and only list what genuinely fits. If there's truly nothing, say so and offer at-home activity ideas instead.
+- For users under 13 or in middle school: after listing results, add a friendly offer — something like "Want me to also suggest some fun things you can do at home or with your family around this topic? 🌱"
 - If they say yes (or ask for at-home/DIY ideas), respond with 3–5 age-appropriate hands-on activities they can do solo, with family, or with friends — like composting, starting a neighborhood recycling drive, making care packages, writing letters to officials, hosting a bake sale for a cause, etc. These should feel doable, fun, and age-right.
-- Always prioritize real searchable opportunities first. The at-home activities are a bonus layer for younger users or when formal opportunities aren't accessible.
 - If the user explicitly asks for family-friendly or kid-friendly activities, skip straight to the activity suggestions without waiting to be asked.
 
 Language:
@@ -145,18 +146,32 @@ async function rawSearch(query, maxResults = 5) {
 }
 
 function extractAge(text) {
-  const patterns = [
+  const numericPatterns = [
     /\bi(?:'m| am)\s+(\d{1,3})\b/i,              // "I'm 25" / "I am 25"
     /\b(\d{1,3})\s+years?\s*old\b/i,             // "25 years old"
     /\bage[d]?\s*(?:is\s+|of\s+)?(\d{1,3})\b/i, // "age 25" / "aged 25"
   ];
-  for (const p of patterns) {
+  for (const p of numericPatterns) {
     const m = text.match(p);
     if (m) {
       const age = parseInt(m[1]);
-      if (age >= 10 && age <= 110) return age;
+      if (age >= 5 && age <= 110) return age;
     }
   }
+
+  // Grade-level detection — returns a conservative (older end) age for the grade band
+  const gradeMatch = text.match(/\b(\d{1,2})(?:st|nd|rd|th)\s+grade\b/i);
+  if (gradeMatch) {
+    const grade = parseInt(gradeMatch[1]);
+    if (grade >= 1 && grade <= 12) return grade + 5; // grade 6 → 11, grade 12 → 17
+  }
+
+  // School-level cues — use the oldest plausible age in the band (conservative)
+  if (/\belementary\s+school(?:er)?\b/i.test(text)) return 11;
+  if (/\bmiddle\s+school(?:er)?\b/i.test(text)) return 13;
+  if (/\bjunior\s+high\b/i.test(text)) return 13;
+  if (/\bhigh\s+school(?:er)?\b/i.test(text)) return 17;
+
   return null;
 }
 
@@ -200,9 +215,14 @@ export default async function handler(req, res) {
     }
   }
 
-  // Detect age if mentioned in the latest user message
-  const latestUserMsg = [...messages].reverse().find(m => m.role === 'user')?.content || '';
-  const detectedAge = extractAge(latestUserMsg);
+  // Detect age from any user message in the conversation (persists if mentioned early on)
+  let detectedAge = null;
+  for (const msg of [...messages].reverse()) {
+    if (msg.role === 'user') {
+      const age = extractAge(msg.content || '');
+      if (age !== null) { detectedAge = age; break; }
+    }
+  }
   if (detectedAge !== null) {
     logEvent('age_mention', { age: detectedAge, embed_key_id: embedKeyId, ...geoFromRequest(req) });
   }
@@ -218,6 +238,25 @@ export default async function handler(req, res) {
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   };
 
+  // Build age-aware system prompt addendum
+  let ageContext = '';
+  if (detectedAge !== null && detectedAge < 18) {
+    ageContext = `\n\nCRITICAL — USER AGE: This user is ${detectedAge} years old. Apply strict age filtering to every result you show, including follow-up research from research_organization:
+- Only include opportunities that explicitly accept participants aged ${detectedAge} or younger, OR that have no stated minimum age.
+- Skip any opportunity that requires participants to be ${detectedAge < 16 ? '14, 16,' : ''} 18, or older. Do not mention skipped results at all.
+- If an opportunity's age eligibility is unclear, err on the side of caution and leave it out.
+- When using research_organization to look up more details, apply the same filter — do not relay any program details, requirements, or links that are for adults only.
+- This rule overrides everything else. Showing an age-inappropriate opportunity to this user is never acceptable.`;
+  } else if (detectedAge === null) {
+    // Default-conservative: platform is built for youth, unknown age should still be safe
+    const isFirstMessage = messages.filter(m => m.role === 'user').length === 1;
+    ageContext = `\n\nAGE UNKNOWN: The user has not stated their age. Because this platform primarily serves young people (ages 11–26), apply youth-safe defaults:
+- Prefer opportunities that are explicitly open to teens and young adults.
+- Flag any opportunity that appears to be 18+ or adult-only with a note like "heads up — this one may have an age minimum, double-check before applying."
+- Do not include opportunities that are clearly adult-only employment (e.g., bartending, security guard work, roles explicitly requiring workers to be 21+).${isFirstMessage ? `
+- At the end of your response (after the results), add one friendly line letting the user know that sharing their age helps Linkist find age-appropriate results — and that you highly recommend it. Keep it warm and in character, not robotic. For example: "P.S. — telling me your age (like 'I'm 16') helps me find opportunities that are actually open to you! 🎯"` : ''}`;
+  }
+
   try {
     const cappedMessages = messages.slice(-10);
     let currentMessages = [...cappedMessages];
@@ -227,7 +266,7 @@ export default async function handler(req, res) {
       const stream = anthropic.messages.stream({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 1000,
-        system: SYSTEM_PROMPT,
+        system: SYSTEM_PROMPT + ageContext,
         tools: toolCallCount < 2 ? tools : undefined,
         messages: currentMessages,
       });
