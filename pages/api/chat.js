@@ -279,17 +279,30 @@ When in doubt, leave it out. Do not mention skipped results at all.
 When using research_organization to look up more details, apply the same filter — do not relay program details or links that are for adults or college students only.
 This rule overrides everything else. Showing an age-inappropriate opportunity to this user is never acceptable.`;
   } else if (detectedAge === null) {
-    // Default-conservative: platform is built for youth, unknown age should still be safe
-    const isFirstMessage = messages.filter(m => m.role === 'user').length === 1;
-    const latestUserMsg = [...messages].reverse().find(m => m.role === 'user')?.content || '';
-    const isAgeSensitiveQuery = /\b(internship|internships|job|jobs|employment|paid\s+position|apprenticeship|fellowship|fellowships|career|work\s+experience)\b/i.test(latestUserMsg);
+    // Check if Linkist already asked for age in a prior assistant turn
+    const alreadyAskedForAge = messages
+      .filter(m => m.role === 'assistant')
+      .some(m => {
+        const text = typeof m.content === 'string'
+          ? m.content
+          : Array.isArray(m.content)
+            ? m.content.filter(b => b.type === 'text').map(b => b.text).join(' ')
+            : '';
+        return /how old are you|what.?s your age|your age\?|old are you\?/i.test(text);
+      });
 
-    ageContext = `\n\nAGE UNKNOWN: The user has not stated their age. Because this platform primarily serves young people (ages 11–26), apply youth-safe defaults:
-- Prefer opportunities that are explicitly open to teens and young adults.
-- Flag any opportunity that appears to be 18+ or adult-only with a note like "heads up — this one may have an age minimum, double-check before applying."
-- Do not include opportunities that are clearly adult-only employment (e.g., bartending, security guard work, roles explicitly requiring workers to be 21+).${isAgeSensitiveQuery ? `
-- IMPORTANT: The user is searching for something (internships, jobs, or similar) where age eligibility requirements vary significantly. Before using search_opportunities, ask for their age in a warm, one-line way — something like "Quick one before I dive in — how old are you? That helps me make sure everything I find is actually open to you! 🎯" Do NOT search until they answer.` : ''}${isFirstMessage && !isAgeSensitiveQuery ? `
-- At the end of your response (after the results), add one friendly line letting the user know that sharing their age helps Linkist find age-appropriate results — and that you highly recommend it. Keep it warm and in character, not robotic. For example: "P.S. — telling me your age (like 'I'm 16') helps me find opportunities that are actually open to you! 🎯"` : ''}`;
+    if (alreadyAskedForAge) {
+      // User was asked and didn't share — assume under 18 for safety
+      ageContext = `\n\nAGE DECLINED: The user was asked for their age but chose not to share it. Acknowledge their choice warmly — let them know that's totally okay, but that it means you'll be limiting results to opportunities that are safe for minors, so they may see fewer options than if they had shared their age. Then proceed with the search applying strict under-18 filtering:
+- Only include opportunities that explicitly welcome teens, high school students, or youth, OR that have no stated minimum age.
+- Skip any opportunity requiring college enrollment, college standing, a degree, a professional license, or participants to be 18 or older. Do not mention skipped results.
+- If eligibility is unclear, leave it out.
+- Apply this same filter to any research_organization results.
+- Do not ask for their age again.`;
+    } else {
+      // Age not yet known and not yet asked — ask before searching
+      ageContext = `\n\nAGE UNKNOWN: The user has not stated their age. Before using search_opportunities, ask for it in one warm, friendly line — something like "Quick one before I dive in — how old are you? That helps me make sure everything I find is actually open to you! 🎯" Do NOT search until they respond. If they refuse or say they'd rather not share, let them know that's completely understandable, but that it means you'll be keeping results limited to minor-safe opportunities so they may see fewer options — then proceed with the search applying strict under-18 filtering.`;
+    }
   }
 
   try {
