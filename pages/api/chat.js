@@ -241,12 +241,25 @@ export default async function handler(req, res) {
   // Build age-aware system prompt addendum
   let ageContext = '';
   if (detectedAge !== null && detectedAge < 18) {
-    ageContext = `\n\nCRITICAL — USER AGE: This user is ${detectedAge} years old. Apply strict age filtering to every result you show, including follow-up research from research_organization:
-- Only include opportunities that explicitly accept participants aged ${detectedAge} or younger, OR that have no stated minimum age.
-- Skip any opportunity that requires participants to be ${detectedAge < 16 ? '14, 16,' : ''} 18, or older. Do not mention skipped results at all.
-- If an opportunity's age eligibility is unclear, err on the side of caution and leave it out.
-- When using research_organization to look up more details, apply the same filter — do not relay any program details, requirements, or links that are for adults only.
-- This rule overrides everything else. Showing an age-inappropriate opportunity to this user is never acceptable.`;
+    const collegeRequired = detectedAge < 18;
+    ageContext = `\n\nCRITICAL — USER AGE: This user is ${detectedAge} years old. Apply strict age filtering to every result you show, including follow-up research from research_organization.
+
+SKIP any opportunity that has ANY of these disqualifying requirements — even if no explicit age number is stated:
+- Requires the applicant to be 18 or older
+- Requires current enrollment in a 2-year or 4-year college or university${collegeRequired ? ' (this user is not college-aged)' : ''}
+- Requires sophomore, junior, senior, or graduate standing at a college or university
+- Requires a college degree, graduate degree, or professional certification
+- Requires a professional license (e.g. engineering license, law license, medical license)
+- Is a full-time paid role (40 hrs/week) designed for working adults, not students
+- Has any other prerequisite this user clearly cannot meet at age ${detectedAge}
+
+INCLUDE only opportunities where:
+- The listing explicitly welcomes high school students, teens, or youth aged ${detectedAge} or similar, OR
+- There is no eligibility requirement that rules out a ${detectedAge}-year-old
+
+When in doubt, leave it out. Do not mention skipped results at all.
+When using research_organization to look up more details, apply the same filter — do not relay program details or links that are for adults or college students only.
+This rule overrides everything else. Showing an age-inappropriate opportunity to this user is never acceptable.`;
   } else if (detectedAge === null) {
     // Default-conservative: platform is built for youth, unknown age should still be safe
     const isFirstMessage = messages.filter(m => m.role === 'user').length === 1;
