@@ -170,6 +170,24 @@ function extractAge(text) {
   if (/\belementary\s+school(?:er)?\b/i.test(text)) return 11;
   if (/\bmiddle\s+school(?:er)?\b/i.test(text)) return 13;
   if (/\bjunior\s+high\b/i.test(text)) return 13;
+
+  // Year-in-school detection — differentiate HS vs college context
+  const yearWords = { freshman: 0, freshmen: 0, sophomore: 1, junior: 2, senior: 3 };
+  const hsPattern = /\b(high\s+school|h\.?s\.?)\b/i;
+  const collegePattern = /\b(college|university|undergrad)\b/i;
+  const yearPattern = /\b(freshman|freshmen|sophomore|junior|senior)\b/i;
+
+  const yearMatch = text.match(yearPattern);
+  if (yearMatch) {
+    const offset = yearWords[yearMatch[1].toLowerCase()] ?? 0;
+    if (hsPattern.test(text)) return 14 + offset;     // HS freshman=14 … senior=17
+    if (collegePattern.test(text)) return 18 + offset; // College freshman=18 … senior=21
+    // Standalone ("I'm a sophomore") — default to HS (safer/younger interpretation)
+    if (/\bi(?:'m| am)\s+a\s+(freshman|freshmen|sophomore|junior|senior)\b/i.test(text)) {
+      return 14 + offset;
+    }
+  }
+
   if (/\bhigh\s+school(?:er)?\b/i.test(text)) return 17;
 
   return null;
