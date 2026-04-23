@@ -281,10 +281,14 @@ This rule overrides everything else. Showing an age-inappropriate opportunity to
   } else if (detectedAge === null) {
     // Default-conservative: platform is built for youth, unknown age should still be safe
     const isFirstMessage = messages.filter(m => m.role === 'user').length === 1;
+    const latestUserMsg = [...messages].reverse().find(m => m.role === 'user')?.content || '';
+    const isAgeSensitiveQuery = /\b(internship|internships|job|jobs|employment|paid\s+position|apprenticeship|fellowship|fellowships|career|work\s+experience)\b/i.test(latestUserMsg);
+
     ageContext = `\n\nAGE UNKNOWN: The user has not stated their age. Because this platform primarily serves young people (ages 11–26), apply youth-safe defaults:
 - Prefer opportunities that are explicitly open to teens and young adults.
 - Flag any opportunity that appears to be 18+ or adult-only with a note like "heads up — this one may have an age minimum, double-check before applying."
-- Do not include opportunities that are clearly adult-only employment (e.g., bartending, security guard work, roles explicitly requiring workers to be 21+).${isFirstMessage ? `
+- Do not include opportunities that are clearly adult-only employment (e.g., bartending, security guard work, roles explicitly requiring workers to be 21+).${isAgeSensitiveQuery ? `
+- IMPORTANT: The user is searching for something (internships, jobs, or similar) where age eligibility requirements vary significantly. Before using search_opportunities, ask for their age in a warm, one-line way — something like "Quick one before I dive in — how old are you? That helps me make sure everything I find is actually open to you! 🎯" Do NOT search until they answer.` : ''}${isFirstMessage && !isAgeSensitiveQuery ? `
 - At the end of your response (after the results), add one friendly line letting the user know that sharing their age helps Linkist find age-appropriate results — and that you highly recommend it. Keep it warm and in character, not robotic. For example: "P.S. — telling me your age (like 'I'm 16') helps me find opportunities that are actually open to you! 🎯"` : ''}`;
   }
 
