@@ -24,6 +24,8 @@ create table if not exists listings (
   is_active    boolean not null default true,
   expires_at   timestamptz,               -- null = never expires
   tags         text[] default '{}',       -- e.g. {'environment','youth','education'}
+  age_min      integer,                   -- minimum age to participate (null = no minimum)
+  age_max      integer,                   -- maximum age to participate (null = no maximum)
   created_at   timestamptz not null default now()
 );
 

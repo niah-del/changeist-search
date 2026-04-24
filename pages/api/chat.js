@@ -361,6 +361,7 @@ This rule overrides everything else. Showing an age-inappropriate opportunity to
               query: block.input.query,
               type: block.input.type || '',
               embedKeyId,
+              userAge: detectedAge,
             });
             resultContent = JSON.stringify(results.slice(0, 8));
           } else if (block.name === 'research_organization') {

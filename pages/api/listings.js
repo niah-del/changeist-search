@@ -1,5 +1,19 @@
 import { supabase } from '../../lib/supabase';
 
+// Parses "16", "13-18", "13–18", "13 to 18" → { age_min, age_max }
+function parseAgeRequirement(value) {
+  if (!value && value !== 0) return { age_min: null, age_max: null };
+  const str = String(value).trim();
+  const rangeMatch = str.match(/^(\d+)\s*[-–—]|to\s*(\d+)$/i) ||
+    str.match(/^(\d+)\s*(?:[-–—]|to)\s*(\d+)$/i);
+  if (rangeMatch) {
+    return { age_min: parseInt(rangeMatch[1]), age_max: parseInt(rangeMatch[2]) };
+  }
+  const single = str.match(/^(\d+)$/);
+  if (single) return { age_min: parseInt(single[1]), age_max: null };
+  return { age_min: null, age_max: null };
+}
+
 /**
  * Admin endpoint for managing listings.
  * Protected by ADMIN_SECRET environment variable.
@@ -42,12 +56,14 @@ export default async function handler(req, res) {
 
   // --- POST: create listing ---
   if (req.method === 'POST') {
-    const { title, organization, description, type, location, url, priority, tags, expires_at } =
+    const { title, organization, description, type, location, url, priority, tags, expires_at, age_requirement } =
       req.body;
 
     if (!title || !organization) {
       return res.status(400).json({ error: 'title and organization are required' });
     }
+
+    const { age_min, age_max } = parseAgeRequirement(age_requirement);
 
     const { data, error } = await supabase
       .from('listings')
@@ -61,6 +77,8 @@ export default async function handler(req, res) {
         priority: priority ?? 0,   // 0 = internal, 1 = sponsored
         tags: tags || [],
         expires_at: expires_at || null,
+        age_min,
+        age_max,
         is_active: true,
       })
       .select()
@@ -75,7 +93,14 @@ export default async function handler(req, res) {
     const { id } = req.query;
     if (!id) return res.status(400).json({ error: 'id is required' });
 
-    const updates = req.body;
+    const updates = { ...req.body };
+    if ('age_requirement' in updates) {
+      const { age_min, age_max } = parseAgeRequirement(updates.age_requirement);
+      updates.age_min = age_min;
+      updates.age_max = age_max;
+      delete updates.age_requirement;
+    }
+
     const { data, error } = await supabase
       .from('listings')
       .update(updates)
