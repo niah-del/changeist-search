@@ -377,6 +377,8 @@
                       isLoading = false;
                       sendBtn.disabled = false;
                     } else if (lastEvent === 'error') {
+                      stopThinkingPhrases();
+                      thinkingEl.style.display = 'none';
                       appendErrorMessage();
                       messages.pop();
                       isLoading = false;
@@ -389,6 +391,8 @@
               readChunk();
             }).catch(function (err) {
               console.error('[Changeist]', err);
+              stopThinkingPhrases();
+              thinkingEl.style.display = 'none';
               appendErrorMessage();
               messages.pop();
               isLoading = false;

@@ -392,7 +392,7 @@ This rule overrides everything else. Showing an age-inappropriate opportunity to
       return;
     }
   } catch (err) {
-    console.error('[chat stream]', err);
+    console.error('[chat stream error]', err?.status, err?.message, err?.error ?? err);
     sendEvent('error', { message: 'Something went wrong. Please try again.' });
     res.end();
   }
