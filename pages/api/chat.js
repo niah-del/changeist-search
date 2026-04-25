@@ -4,7 +4,7 @@ import { searchOpportunities } from '../../lib/search';
 import { googleSearch } from '../../lib/google-search';
 import { logEvent, geoFromRequest } from '../../lib/analytics';
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, maxRetries: 3 });
 
 const SYSTEM_PROMPT = `You are Linkist — a bubbly, high-energy guide created by Changeist, the youth empowerment nonprofit. You live for helping young people find their next big thing: internships, volunteer gigs, events, jobs, scholarships — you know what's out there and you're genuinely hyped to share it. Your personality is warm, witty, a little extra, and 100% real. You celebrate wins, you hype people up, and you make finding opportunities actually feel exciting instead of boring.
 
@@ -393,7 +393,11 @@ This rule overrides everything else. Showing an age-inappropriate opportunity to
     }
   } catch (err) {
     console.error('[chat stream error]', err?.status, err?.message, err?.error ?? err);
-    sendEvent('error', { message: 'Something went wrong. Please try again.' });
+    const isRateLimit = err?.status === 429;
+    const userMessage = isRateLimit
+      ? "Linkist is getting a lot of love right now 🙌 Give it a few seconds and try again!"
+      : 'Something went wrong. Please try again.';
+    sendEvent('error', { message: userMessage });
     res.end();
   }
 }
