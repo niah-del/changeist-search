@@ -55,7 +55,7 @@ export default async function handler(req, res) {
 
   // --- POST: create listing ---
   if (req.method === 'POST') {
-    const { title, organization, description, type, location, url, priority, tags, expires_at, age_requirement } =
+    const { title, organization, description, type, location, url, priority, tags, expires_at, age_requirement, location_requirement, experience_required, youth_gains, participation_cost } =
       req.body;
 
     if (!title || !organization) {
@@ -69,15 +69,19 @@ export default async function handler(req, res) {
       .insert({
         title,
         organization,
-        description: description || null,
-        type: type || null,
-        location: location || null,
-        url: url || null,
-        priority: priority ?? 0,   // 0 = internal, 1 = sponsored
-        tags: tags || [],
-        expires_at: expires_at || null,
+        description:          description          || null,
+        type:                 type                 || null,
+        location:             location             || null,
+        url:                  url                  || null,
+        priority:             priority             ?? 0,
+        tags:                 tags                 || [],
+        expires_at:           expires_at           || null,
         age_min,
         age_max,
+        location_requirement: location_requirement || null,
+        experience_required:  experience_required  || null,
+        youth_gains:          youth_gains          || null,
+        participation_cost:   participation_cost   || null,
         is_active: true,
       })
       .select()
