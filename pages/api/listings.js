@@ -4,8 +4,7 @@ import { supabase } from '../../lib/supabase';
 function parseAgeRequirement(value) {
   if (!value && value !== 0) return { age_min: null, age_max: null };
   const str = String(value).trim();
-  const rangeMatch = str.match(/^(\d+)\s*[-–—]|to\s*(\d+)$/i) ||
-    str.match(/^(\d+)\s*(?:[-–—]|to)\s*(\d+)$/i);
+  const rangeMatch = str.match(/^(\d+)\s*(?:[-–—]|to)\s*(\d+)$/i);
   if (rangeMatch) {
     return { age_min: parseInt(rangeMatch[1]), age_max: parseInt(rangeMatch[2]) };
   }
