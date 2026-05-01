@@ -24,6 +24,7 @@ export default async function handler(req, res) {
     { data: sessionRows },
     { data: ageRows },
     { data: reportRows },
+    { data: oppTypeRows },
   ] = await Promise.all([
     supabase.from('search_events').select('*', { count: 'exact', head: true })
       .eq('event_type', 'search').gte('created_at', since),
@@ -43,6 +44,8 @@ export default async function handler(req, res) {
       .eq('event_type', 'age_mention').gte('created_at', since).not('age', 'is', null),
     supabase.from('reports').select('id, user_message, assistant_message, country, created_at')
       .order('created_at', { ascending: false }).limit(50),
+    supabase.from('search_events').select('opportunity_type')
+      .eq('event_type', 'search').gte('created_at', since).not('opportunity_type', 'is', null),
   ]);
 
   // Top search queries
@@ -88,6 +91,24 @@ export default async function handler(req, res) {
     .sort((a, b) => b[1] - a[1]).slice(0, 15)
     .map(([country, count]) => ({ country, count }));
 
+  // By region
+  const regionCounts = {};
+  (geoRows || []).forEach(r => {
+    if (r.region) regionCounts[r.region] = (regionCounts[r.region] || 0) + 1;
+  });
+  const by_region = Object.entries(regionCounts)
+    .sort((a, b) => b[1] - a[1]).slice(0, 15)
+    .map(([region, count]) => ({ region, count }));
+
+  // Opportunity type distribution
+  const oppTypeCounts = {};
+  (oppTypeRows || []).forEach(r => {
+    if (r.opportunity_type) oppTypeCounts[r.opportunity_type] = (oppTypeCounts[r.opportunity_type] || 0) + 1;
+  });
+  const by_opportunity_type = Object.entries(oppTypeCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([type, count]) => ({ type, count }));
+
   // Events by day
   const dayCounts = {};
   (dayRows || []).forEach(r => {
@@ -104,20 +125,21 @@ export default async function handler(req, res) {
   const avg = arr => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : null;
 
   return res.status(200).json({
-    _debug_usCityRows: usCityRows,
     period: 'last_30_days',
     totals: {
-      searches:              totalSearches || 0,
-      chat_starts:           totalChatStarts || 0,
-      completed_sessions:    durations.length,
+      searches:           totalSearches || 0,
+      chat_starts:        totalChatStarts || 0,
+      completed_sessions: durations.length,
     },
     avg_session_duration_seconds: avg(durations),
     avg_messages_per_session:     avg(msgCounts),
     top_queries,
     age_distribution,
+    by_opportunity_type,
     by_country,
+    by_region,
     us_cities,
     by_day,
-    reports:                reportRows || [],
+    reports: reportRows || [],
   });
 }

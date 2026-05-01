@@ -69,13 +69,15 @@ export default function Dashboard() {
     );
   }
 
-  const { totals, avg_session_duration_seconds, avg_messages_per_session, top_queries, age_distribution, by_country, us_cities, by_day, reports } = data;
+  const { totals, avg_session_duration_seconds, avg_messages_per_session, top_queries, age_distribution, by_opportunity_type, by_country, by_region, us_cities, by_day, reports } = data;
 
   const maxDay     = Math.max(...(by_day || []).map(d => d.count), 1);
   const maxQuery   = Math.max(...(top_queries || []).map(q => q.count), 1);
   const maxCountry = Math.max(...(by_country || []).map(c => c.count), 1);
   const maxCity    = Math.max(...(us_cities  || []).map(c => c.count), 1);
   const maxAge     = Math.max(...(age_distribution || []).map(a => a.count), 1);
+  const maxOppType = Math.max(...(by_opportunity_type || []).map(o => o.count), 1);
+  const maxRegion  = Math.max(...(by_region || []).map(r => r.count), 1);
 
   function fmtDuration(s) {
     if (!s) return '—';
@@ -176,6 +178,37 @@ export default function Dashboard() {
               </div>
           }
         </div>
+
+        {/* Opportunity type distribution */}
+        <div style={s.section}>
+          <div style={s.sectionH}>Searches by Opportunity Type</div>
+          {(!by_opportunity_type || by_opportunity_type.length === 0)
+            ? <div style={{ color: '#aaa', fontSize: 14 }}>No data yet</div>
+            : (by_opportunity_type || []).map(o => (
+              <div key={o.type} style={s.row}>
+                <div style={s.rowLabel}>{o.type.charAt(0).toUpperCase() + o.type.slice(1)}</div>
+                <div style={{ ...s.bar, width: Math.max(4, Math.round((o.count / maxOppType) * 140)) }} />
+                <div style={s.rowCount}>{o.count}</div>
+              </div>
+            ))
+          }
+        </div>
+
+        {/* By region */}
+        {by_region && by_region.length > 0 && (
+          <div style={s.section}>
+            <div style={s.sectionH}>By Region / State</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' }}>
+              {by_region.map(r => (
+                <div key={r.region} style={s.row}>
+                  <div style={s.rowLabel}>{r.region}</div>
+                  <div style={{ ...s.bar, width: Math.max(4, Math.round((r.count / maxRegion) * 140)) }} />
+                  <div style={s.rowCount}>{r.count}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* US cities */}
         {us_cities && us_cities.length > 0 && (
