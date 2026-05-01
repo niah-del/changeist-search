@@ -31,18 +31,33 @@ const s = {
   reportTextFlag: { fontSize: 13, color: '#7f1d1d', background: '#fef2f2', borderRadius: 6, padding: '8px 12px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' },
 };
 
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function monthOptions() {
+  const now = new Date();
+  const options = [];
+  // Go back 12 months from current
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    options.push({ month: d.getMonth() + 1, year: d.getFullYear() });
+  }
+  return options;
+}
+
 export default function Dashboard() {
+  const now = new Date();
   const [secret, setSecret] = useState('');
   const [data, setData]     = useState(null);
   const [error, setError]   = useState('');
   const [loading, setLoading] = useState(false);
+  const [month, setMonth]   = useState(now.getMonth() + 1);
+  const [year, setYear]     = useState(now.getFullYear());
 
-  async function login(e) {
-    e.preventDefault();
+  async function fetchData(m, y) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/analytics?secret=' + encodeURIComponent(secret));
+      const res = await fetch(`/api/analytics?secret=${encodeURIComponent(secret)}&month=${m}&year=${y}`);
       if (res.status === 401) { setError('Wrong secret.'); setLoading(false); return; }
       if (!res.ok) throw new Error('Server error');
       setData(await res.json());
@@ -50,6 +65,18 @@ export default function Dashboard() {
       setError('Could not load data. Try again.');
     }
     setLoading(false);
+  }
+
+  async function login(e) {
+    e.preventDefault();
+    fetchData(month, year);
+  }
+
+  async function changeMonth(e) {
+    const [y, m] = e.target.value.split('-').map(Number);
+    setMonth(m);
+    setYear(y);
+    fetchData(m, y);
   }
 
   if (!data) {
@@ -92,8 +119,21 @@ export default function Dashboard() {
     <div style={s.page}>
       <link href="https://fonts.googleapis.com/css2?family=Unica+One&family=Lato:wght@400;700&display=swap" rel="stylesheet" />
       <div style={s.center}>
-        <div style={s.heading}>Changeist Analytics</div>
-        <p style={s.sub}>Last 30 days · Anonymous usage only · No personal data stored</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <div style={s.heading}>Changeist Analytics</div>
+          <select
+            value={`${year}-${String(month).padStart(2, '0')}`}
+            onChange={changeMonth}
+            disabled={loading}
+            style={{ padding: '6px 10px', borderRadius: 8, border: '1.5px solid #ddd', fontSize: 14, cursor: 'pointer' }}
+          >
+            {monthOptions().map(o => {
+              const val = `${o.year}-${String(o.month).padStart(2, '0')}`;
+              return <option key={val} value={val}>{MONTH_NAMES[o.month - 1]} {o.year}</option>;
+            })}
+          </select>
+        </div>
+        <p style={s.sub}>{MONTH_NAMES[month - 1]} {year} · Anonymous usage only · No personal data stored</p>
 
         {/* Top stats */}
         <div style={{ ...s.grid, gridTemplateColumns: 'repeat(5, 1fr)' }}>

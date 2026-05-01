@@ -12,7 +12,11 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const now = new Date();
+  const month = parseInt(req.query.month) || (now.getUTCMonth() + 1);
+  const year  = parseInt(req.query.year)  || now.getUTCFullYear();
+  const since = new Date(Date.UTC(year, month - 1, 1)).toISOString();
+  const until = new Date(Date.UTC(year, month, 1)).toISOString(); // exclusive: first of next month
 
   const [
     { count: totalSearches },
@@ -27,25 +31,25 @@ export default async function handler(req, res) {
     { data: oppTypeRows },
   ] = await Promise.all([
     supabase.from('search_events').select('*', { count: 'exact', head: true })
-      .eq('event_type', 'search').gte('created_at', since),
+      .eq('event_type', 'search').gte('created_at', since).lt('created_at', until),
     supabase.from('search_events').select('*', { count: 'exact', head: true })
-      .eq('event_type', 'chat_start').gte('created_at', since),
+      .eq('event_type', 'chat_start').gte('created_at', since).lt('created_at', until),
     supabase.from('search_events').select('query')
-      .eq('event_type', 'search').gte('created_at', since).not('query', 'is', null),
+      .eq('event_type', 'search').gte('created_at', since).lt('created_at', until).not('query', 'is', null),
     supabase.from('search_events').select('country, region')
-      .gte('created_at', since).not('country', 'is', null),
+      .gte('created_at', since).lt('created_at', until).not('country', 'is', null),
     supabase.from('search_events').select('city, country')
-      .gte('created_at', since).not('city', 'is', null),
+      .gte('created_at', since).lt('created_at', until).not('city', 'is', null),
     supabase.from('search_events').select('created_at, event_type')
-      .gte('created_at', since),
+      .gte('created_at', since).lt('created_at', until),
     supabase.from('search_events').select('duration_seconds, message_count')
-      .eq('event_type', 'session_end').gte('created_at', since),
+      .eq('event_type', 'session_end').gte('created_at', since).lt('created_at', until),
     supabase.from('search_events').select('age')
-      .eq('event_type', 'age_mention').gte('created_at', since).not('age', 'is', null),
+      .eq('event_type', 'age_mention').gte('created_at', since).lt('created_at', until).not('age', 'is', null),
     supabase.from('reports').select('id, user_message, assistant_message, country, created_at')
-      .order('created_at', { ascending: false }).limit(50),
+      .gte('created_at', since).lt('created_at', until).order('created_at', { ascending: false }).limit(50),
     supabase.from('search_events').select('opportunity_type')
-      .eq('event_type', 'search').gte('created_at', since).not('opportunity_type', 'is', null),
+      .eq('event_type', 'search').gte('created_at', since).lt('created_at', until).not('opportunity_type', 'is', null),
   ]);
 
   // Top search queries
@@ -125,7 +129,7 @@ export default async function handler(req, res) {
   const avg = arr => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : null;
 
   return res.status(200).json({
-    period: 'last_30_days',
+    period: { month, year },
     totals: {
       searches:           totalSearches || 0,
       chat_starts:        totalChatStarts || 0,
