@@ -284,6 +284,25 @@
           }
 
           var fullText = '';
+          var displayedText = '';
+          var charQueue = [];
+          var typeTimer = null;
+
+          function drainQueue() {
+            if (charQueue.length === 0) { typeTimer = null; return; }
+            // Render 2 chars per frame (~60fps) for smooth typewriter feel
+            var batch = charQueue.splice(0, 2).join('');
+            displayedText += batch;
+            bodyEl.innerHTML = markdownLinksToHtml(displayedText);
+            if (autoScroll) messagesEl.scrollTop = messagesEl.scrollHeight;
+            typeTimer = setTimeout(drainQueue, 16);
+          }
+
+          function flushQueue() {
+            if (typeTimer) { clearTimeout(typeTimer); typeTimer = null; }
+            displayedText = fullText;
+            charQueue = [];
+          }
 
           actionsEl.querySelector('.cg-copy-btn').addEventListener('click', function () {
             var btn = this;
@@ -363,13 +382,14 @@
                     if (lastEvent === 'chunk') {
                       if (thinkingEl.style.display !== 'none') stopThinkingPhrases();
                       fullText += data.text;
-                      bodyEl.innerHTML = markdownLinksToHtml(fullText);
-                      if (autoScroll) messagesEl.scrollTop = messagesEl.scrollHeight;
+                      for (var ci = 0; ci < data.text.length; ci++) charQueue.push(data.text[ci]);
+                      if (!typeTimer) drainQueue();
                     } else if (lastEvent === 'thinking') {
                       thinkingEl.style.display = 'flex';
                       setTimeout(function () { thinkingEl.classList.add('cg-thinking-visible'); }, 10);
                       startThinkingPhrases();
                     } else if (lastEvent === 'done') {
+                      flushQueue();
                       bodyEl.innerHTML = markdownLinksToHtml(fullText);
                       actionsEl.style.display = '';
                       messages.push({ role: 'assistant', content: fullText });
@@ -377,6 +397,7 @@
                       isLoading = false;
                       sendBtn.disabled = false;
                     } else if (lastEvent === 'error') {
+                      flushQueue();
                       stopThinkingPhrases();
                       thinkingEl.style.display = 'none';
                       appendErrorMessage();
