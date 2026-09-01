@@ -1,8 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { supabase } from '../../lib/supabase';
-import { searchOpportunities } from '../../lib/search';
+import { searchOpportunities, filterAdultResults } from '../../lib/search';
 import { googleSearch } from '../../lib/google-search';
 import { logEvent, geoFromRequest } from '../../lib/analytics';
+import { extractAge } from '../../lib/age.mjs';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, maxRetries: 3 });
 
@@ -61,6 +62,17 @@ Changeist promotion logic:
 - August–December (recruitment season): For users in LA or Stockton, push Changeist proactively and early. This is when Changeist is actively recruiting new members, so treat it as a near-default recommendation for any qualifying user (ages 11–26) whose interests could connect — even loosely — to Changeist's broad focus areas.
 - Always link to [changeist.org](https://www.changeist.org) when recommending them.
 
+Keeping personal information safe:
+- Never ask for a user's full name, home address, phone number, email, school name, or any social media handle. You only ever need a general city and an age — nothing more specific.
+- If a user volunteers identifying details anyway, do not repeat them back, do not store them in your reply, and gently steer away: something like "you don't need to tell me all that — I just need a city and I'm good! 😊"
+- Never help arrange private, one-on-one, or unsupervised contact between a young person and an adult from a listing. Always point them to the organization's official application page or main contact channel instead.
+- If an opportunity asks for a Social Security Number, bank or payment details, a photo of an ID, or a fee before applying, do not surface it. Tell the user plainly that legitimate programs never ask for those upfront.
+
+If someone seems to be struggling:
+- If a user mentions self-harm, suicide, abuse, violence, or being unsafe at home, stop searching for opportunities and respond first as a caring human would — briefly, warmly, without panic or lecturing.
+- Do not try to counsel them, diagnose anything, or keep them talking about it. Encourage them to tell a trusted adult, and share the 988 Suicide & Crisis Lifeline (call or text 988, US) as a free, confidential, 24/7 option.
+- Then let them lead. If they want to keep looking for opportunities, pick that back up warmly.
+
 Age-aware guidance:
 - Pay attention to age cues in what the user tells you. If someone says they are under 13, in middle school, or seems very young, ONLY show opportunities that are explicitly open to their age group or have no stated minimum age. Never surface an opportunity that requires participants to be 16, 18, or older to a user who is younger than that threshold.
 - If no age-appropriate opportunities exist in the results, be honest and warm about it — say something like "Most of these have an age minimum you haven't hit yet, but here's what IS open to you:" and only list what genuinely fits. If there's truly nothing, say so and offer at-home activity ideas instead.
@@ -88,6 +100,36 @@ Formatting rules:
   1. "Oh, and by the way — don't forget to copy any responses I give you so you can save them for later! I don't store any of your data here (that'd be creepy 👀)."
   2. "📋 *Quick heads up: I'm an AI, so always do your own research before applying to any opportunity — and if you're under 18, loop in a parent or guardian before signing up for anything.*"
   Do NOT include these reminders on any follow-up messages.
+
+Worked examples — format and voice reference:
+These illustrate the shape of a good response. The listings, organizations, and URLs in them are INVENTED. Never reuse them, never present them as real opportunities, and never let them influence what you claim exists. Only ever surface what search_opportunities and research_organization actually return.
+
+Example A — a 15-year-old in Los Angeles asking about environmental volunteering. Note the ✓ on the internal listing, the flagged cost, the flagged deadline, and the age range worked into the "why":
+
+Okay the timing on this is unreal — LA is absolutely loaded with climate stuff right now 🌎✨
+
+1. **[Youth Climate Council](https://www.changeist.org/climate)** ✓ — Changeist — *Why you'd love it:* Open to ages 11–26, completely free, and you'd be shaping actual local policy instead of just talking about it.
+2. **[Coastal Cleanup Crew](https://example.org/coastal)** — Heal the Bay — *Why you'd love it:* Saturday mornings on the beach with a crew your own age, no experience needed, and they hand you every tool you'll use.
+3. **[Urban Garden Apprentice](https://example.org/garden)** — LA Community Growers — *Why you'd love it:* Hands-on growing food for your own neighborhood — heads up though, there's a $25 materials fee and applications close October 14.
+
+Go get it 🌱 Want more like #2? I've got a whole pile.
+
+Example B — a 12-year-old asking about working with animals, where most results were age-gated. Note that the skipped results are acknowledged in one line without being listed, and the at-home offer closes it out:
+
+Animals! Excellent taste 🐾 Most shelter roles want you to be 16 or up, so I've left those out — but here's what's genuinely open to you right now:
+
+1. **[Junior Volunteer Saturdays](https://example.org/junior)** — Pasadena Humane — *Why you'd love it:* Built specifically for ages 10–13, free to join, and you're with the animals from your very first day.
+2. **[Wildlife Watch Reporter](https://example.org/wildlife)** — Nature Nearby — *Why you'd love it:* Fully remote, you can do it from your own backyard, and your photos go straight into a real research database.
+
+Want me to also suggest some fun animal things you could do at home or with your family? 🌱
+
+Example C — a vague opening message with no topic and no location. Ask ONE question, in your own voice, and do not search yet:
+
+Ooh, a blank canvas — my favorite 🎨 What city are you in? That's the one thing I need before I can find you stuff you can actually turn up to.
+
+Example D — a search that returned nothing usable. Stay warm, be honest, and give them a real next move:
+
+Okay, I came up empty on that one — which honestly just means we haven't found your angle yet, not that nothing's out there 💭 Try me again with a nearby bigger city, or a broader version of the topic. And in the meantime, want a couple of ideas you could start on your own this week?
 `;
 
 const tools = [
@@ -130,75 +172,45 @@ const tools = [
   },
 ];
 
+// The only domain Brighten My Day is allowed to draw stories from.
+const NEWS_DOMAIN = 'goodnewsnetwork.org';
+
 // Raw Serper search — no opportunity-type suffix or job-site exclusions appended.
 // Used for news lookups (Brighten My Day) so site: operators work correctly.
+// The site: restriction is enforced here rather than trusted from the model:
+// any site: operator in the incoming query is stripped and replaced with
+// NEWS_DOMAIN, so this path can never reach the open web.
 async function rawSearch(query, maxResults = 5) {
   const apiKey = process.env.SERPER_API_KEY;
   if (!apiKey) return [];
+  const keywords = query.replace(/\bsite:\S+/gi, '').trim();
+  const scopedQuery = `site:${NEWS_DOMAIN} ${keywords}`.trim();
   try {
     const res = await fetch('https://google.serper.dev/search', {
       method: 'POST',
       headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: query, num: Math.min(maxResults, 10) }),
+      body: JSON.stringify({ q: scopedQuery, num: Math.min(maxResults, 10) }),
     });
     if (!res.ok) return [];
     const data = await res.json();
-    return (data.organic || []).map(item => ({
-      title: item.title,
-      url: item.link,
-      description: item.snippet,
-    }));
+    return (data.organic || [])
+      // Second line of defence: drop anything Google returned from another host.
+      .filter(item => {
+        try {
+          const host = new URL(item.link).hostname.replace(/^www\./, '');
+          return host === NEWS_DOMAIN || host.endsWith('.' + NEWS_DOMAIN);
+        } catch {
+          return false;
+        }
+      })
+      .map(item => ({
+        title: item.title,
+        url: item.link,
+        description: item.snippet,
+      }));
   } catch {
     return [];
   }
-}
-
-function extractAge(text) {
-  const numericPatterns = [
-    /\bi(?:'m| am)\s+(\d{1,3})\b/i,              // "I'm 25" / "I am 25"
-    /\b(\d{1,3})\s+years?\s*old\b/i,             // "25 years old"
-    /\bage[d]?\s*(?:is\s+|of\s+)?(\d{1,3})\b/i, // "age 25" / "aged 25"
-  ];
-  for (const p of numericPatterns) {
-    const m = text.match(p);
-    if (m) {
-      const age = parseInt(m[1]);
-      if (age >= 5 && age <= 110) return age;
-    }
-  }
-
-  // Grade-level detection — returns a conservative (older end) age for the grade band
-  const gradeMatch = text.match(/\b(\d{1,2})(?:st|nd|rd|th)\s+grade\b/i);
-  if (gradeMatch) {
-    const grade = parseInt(gradeMatch[1]);
-    if (grade >= 1 && grade <= 12) return grade + 5; // grade 6 → 11, grade 12 → 17
-  }
-
-  // School-level cues — use the oldest plausible age in the band (conservative)
-  if (/\belementary\s+school(?:er)?\b/i.test(text)) return 11;
-  if (/\bmiddle\s+school(?:er)?\b/i.test(text)) return 13;
-  if (/\bjunior\s+high\b/i.test(text)) return 13;
-
-  // Year-in-school detection — differentiate HS vs college context
-  const yearWords = { freshman: 0, freshmen: 0, sophomore: 1, junior: 2, senior: 3 };
-  const hsPattern = /\b(high\s+school|h\.?s\.?)\b/i;
-  const collegePattern = /\b(college|university|undergrad)\b/i;
-  const yearPattern = /\b(freshman|freshmen|sophomore|junior|senior)\b/i;
-
-  const yearMatch = text.match(yearPattern);
-  if (yearMatch) {
-    const offset = yearWords[yearMatch[1].toLowerCase()] ?? 0;
-    if (hsPattern.test(text)) return 14 + offset;     // HS freshman=14 … senior=17
-    if (collegePattern.test(text)) return 18 + offset; // College freshman=18 … senior=21
-    // Standalone ("I'm a sophomore") — default to HS (safer/younger interpretation)
-    if (/\bi(?:'m| am)\s+a\s+(freshman|freshmen|sophomore|junior|senior)\b/i.test(text)) {
-      return 14 + offset;
-    }
-  }
-
-  if (/\bhigh\s+school(?:er)?\b/i.test(text)) return 17;
-
-  return null;
 }
 
 export const config = { api: { responseLimit: false } };
@@ -232,12 +244,14 @@ export default async function handler(req, res) {
   }
 
   // Log chat session start and first query on the user's first message
+  // Awaited before the SSE stream opens — an un-awaited write here is lost
+  // whenever the function is frozen at the end of the response.
   if (messages.length === 1) {
     const geo = geoFromRequest(req);
-    logEvent('chat_start', { embed_key_id: embedKeyId, ...geo });
+    await logEvent('chat_start', { embed_key_id: embedKeyId, ...geo });
     const firstQuery = messages[0]?.content?.trim();
     if (firstQuery) {
-      logEvent('search', { query: firstQuery, embed_key_id: embedKeyId, ...geo });
+      await logEvent('search', { query: firstQuery, embed_key_id: embedKeyId, ...geo });
     }
   }
 
@@ -250,7 +264,7 @@ export default async function handler(req, res) {
     }
   }
   if (detectedAge !== null) {
-    logEvent('age_mention', { age: detectedAge, embed_key_id: embedKeyId, ...geoFromRequest(req) });
+    await logEvent('age_mention', { age: detectedAge, embed_key_id: embedKeyId, ...geoFromRequest(req) });
   }
 
   // --- Switch to SSE streaming ---
@@ -322,8 +336,26 @@ This rule overrides everything else. Showing an age-inappropriate opportunity to
       const stream = anthropic.messages.stream({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 1000,
-        system: SYSTEM_PROMPT + ageContext,
-        tools: toolCallCount < 2 ? tools : undefined,
+        // Two system blocks. The large instruction set is identical on every
+        // request, so it sits before the cache breakpoint and is billed at ~10%
+        // on repeat turns. The per-user age policy varies (it embeds the user's
+        // age), so it goes AFTER the breakpoint where it costs nothing to change.
+        // Haiku 4.5 will not cache a system block under 4,096 tokens, and that
+        // minimum is measured against this block ALONE — the tool definitions
+        // are cached with it but do not count toward the threshold (verified
+        // against the live API). SYSTEM_PROMPT is ~4,197 tokens, clearing it by
+        // ~100. Trimming the prompt below that silently disables caching with no
+        // error; lib/prompt-cache.test.mjs guards against exactly that.
+        system: [
+          { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
+          ...(ageContext ? [{ type: 'text', text: ageContext }] : []),
+        ],
+        // The tool definitions must stay byte-identical on every request —
+        // adding or removing them invalidates the entire tools+system cache.
+        // To stop tool use after two rounds we set tool_choice instead, which
+        // leaves the cached prefix intact.
+        tools,
+        tool_choice: toolCallCount >= 2 ? { type: 'none' } : undefined,
         messages: currentMessages,
       });
 
@@ -352,6 +384,16 @@ This rule overrides everything else. Showing an age-inappropriate opportunity to
 
       const finalMsg = await stream.finalMessage();
 
+      // Cache telemetry. `read` should be ~4,200 on every turn after the first
+      // of a conversation. If it stays 0 across a multi-turn chat, the cached
+      // prefix is being invalidated somewhere and the saving is not happening.
+      const usage = finalMsg.usage || {};
+      console.log(
+        '[cache] write:', usage.cache_creation_input_tokens ?? 0,
+        'read:', usage.cache_read_input_tokens ?? 0,
+        'uncached:', usage.input_tokens ?? 0,
+      );
+
       // Parse accumulated tool inputs
       for (const block of toolUseBlocks) {
         try { block.input = JSON.parse(inputJsonMap[block._index] || '{}'); } catch {}
@@ -373,10 +415,16 @@ This rule overrides everything else. Showing an age-inappropriate opportunity to
             });
             resultContent = JSON.stringify(results.slice(0, 8));
           } else if (block.name === 'research_organization') {
-            const isNewsQuery = block.input.query.includes('goodnewsnetwork.org') || block.input.query.startsWith('site:');
+            const isNewsQuery = block.input.query.includes(NEWS_DOMAIN) || block.input.query.startsWith('site:');
+            // Follow-up research reaches the open web too, so it gets the same
+            // age-aware query terms and the same adult-signal filter as the
+            // primary opportunity search.
             const results = isNewsQuery
               ? await rawSearch(block.input.query, 8)
-              : await googleSearch(block.input.query, 5, '');
+              : filterAdultResults(
+                  await googleSearch(block.input.query, 5, '', detectedAge),
+                  detectedAge,
+                );
             resultContent = results.map(r =>
               `${r.title}\n${r.url}\n${r.description || ''}`
             ).join('\n\n') || 'No results found.';
