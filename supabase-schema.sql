@@ -156,6 +156,7 @@ create table if not exists rate_limits (
 create index if not exists rate_limits_expires on rate_limits (expires_at);
 
 alter table rate_limits enable row level security;
+drop policy if exists "service only" on rate_limits;
 create policy "service only" on rate_limits for all using (false);
 
 -- Atomically increment a window's counter and report whether the caller is
