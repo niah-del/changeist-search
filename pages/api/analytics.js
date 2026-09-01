@@ -29,6 +29,7 @@ export default async function handler(req, res) {
     { data: ageRows },
     { data: reportRows },
     { data: oppTypeRows },
+    { data: serperErrorRows },
   ] = await Promise.all([
     supabase.from('search_events').select('*', { count: 'exact', head: true })
       .eq('event_type', 'search').gte('created_at', since).lt('created_at', until),
@@ -50,6 +51,11 @@ export default async function handler(req, res) {
       .gte('created_at', since).lt('created_at', until).order('created_at', { ascending: false }).limit(50),
     supabase.from('search_events').select('opportunity_type')
       .eq('event_type', 'search').gte('created_at', since).lt('created_at', until).not('opportunity_type', 'is', null),
+    // Serper outages. Web results fail open (empty array), so without this the
+    // only symptom is that results quietly get worse.
+    supabase.from('search_events').select('query, created_at')
+      .eq('event_type', 'serper_error').gte('created_at', since).lt('created_at', until)
+      .order('created_at', { ascending: false }).limit(20),
   ]);
 
   // Top search queries
@@ -145,5 +151,9 @@ export default async function handler(req, res) {
     us_cities,
     by_day,
     reports: reportRows || [],
+    serper_errors: {
+      count: (serperErrorRows || []).length,
+      recent: (serperErrorRows || []).slice(0, 5),
+    },
   });
 }

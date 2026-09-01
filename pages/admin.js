@@ -28,6 +28,10 @@ const s = {
   reportMeta: { fontSize: 11, color: '#9ca3af', marginBottom: 8 },
   reportLabel: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6b7280', marginBottom: 4 },
   reportText: { fontSize: 13, color: '#1a1a1a', background: '#f9fafb', borderRadius: 6, padding: '8px 12px', marginBottom: 10, whiteSpace: 'pre-wrap', wordBreak: 'break-word' },
+  serperAlert: { background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, padding: '16px 20px', marginBottom: 20 },
+  serperTitle: { fontFamily: "'Unica One', sans-serif", fontSize: 16, color: '#92400e', marginBottom: 6 },
+  serperBody:  { fontSize: 13, color: '#78350f', lineHeight: 1.6, marginBottom: 10 },
+  serperRow:   { fontSize: 11, fontFamily: 'ui-monospace, Menlo, monospace', color: '#78350f', padding: '3px 0', borderTop: '1px solid #fde68a', wordBreak: 'break-word' },
   reportTextFlag: { fontSize: 13, color: '#7f1d1d', background: '#fef2f2', borderRadius: 6, padding: '8px 12px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' },
 };
 
@@ -96,7 +100,7 @@ export default function Dashboard() {
     );
   }
 
-  const { totals, avg_session_duration_seconds, avg_messages_per_session, top_queries, age_distribution, by_opportunity_type, by_country, by_region, us_cities, by_day, reports } = data;
+  const { totals, avg_session_duration_seconds, avg_messages_per_session, top_queries, age_distribution, by_opportunity_type, by_country, by_region, us_cities, by_day, reports, serper_errors } = data;
 
   const maxDay     = Math.max(...(by_day || []).map(d => d.count), 1);
   const maxQuery   = Math.max(...(top_queries || []).map(q => q.count), 1);
@@ -158,6 +162,24 @@ export default function Dashboard() {
             <div style={{ ...s.cardNum, color: reports && reports.length > 0 ? '#b91c1c' : '#1a1a1a' }}>{(reports || []).length}</div>
           </div>
         </div>
+
+        {/* Web search outage banner. Serper failures return no results rather
+            than an error, so without this they are invisible. */}
+        {serper_errors && serper_errors.count > 0 && (
+          <div style={s.serperAlert}>
+            <div style={s.serperTitle}>Web search is failing</div>
+            <div style={s.serperBody}>
+              {serper_errors.count} failed web {serper_errors.count === 1 ? 'lookup' : 'lookups'} this month.
+              While this is happening Linkist only sees internal listings — searches still work, but results get much thinner.
+              Check the SERPER_API_KEY in Vercel and your credit balance at serper.dev.
+            </div>
+            {(serper_errors.recent || []).map((e, i) => (
+              <div key={i} style={s.serperRow}>
+                <span style={{ color: '#9ca3af' }}>{new Date(e.created_at).toLocaleString()}</span>{'  '}{e.query}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Activity by day */}
         {recentDays.length > 0 && (
