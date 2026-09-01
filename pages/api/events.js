@@ -1,5 +1,6 @@
 import { supabase } from '../../lib/supabase';
 import { logEvent, geoFromRequest } from '../../lib/analytics';
+import { enforceRateLimit, clientIp, LIMITS } from '../../lib/rate-limit';
 
 /**
  * POST /api/events
@@ -9,6 +10,10 @@ import { logEvent, geoFromRequest } from '../../lib/analytics';
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  if (await enforceRateLimit(req, res, {
+    scope: 'events', identifier: clientIp(req), ...LIMITS.telemetry,
+  })) return;
 
   const { key, event_type, duration_seconds, message_count } = req.body || {};
 

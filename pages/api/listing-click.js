@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase';
+import { enforceRateLimit, clientIp, LIMITS } from '../../lib/rate-limit';
 
 // Canonical form for comparing a clicked link against stored listing URLs.
 // Ignores protocol, a leading "www.", casing of the host, and trailing
@@ -26,6 +27,10 @@ function hostOf(raw) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
+
+  if (await enforceRateLimit(req, res, {
+    scope: 'click', identifier: clientIp(req), ...LIMITS.telemetry,
+  })) return;
 
   const { key, url, query } = req.body || {};
   if (!url) return res.status(400).json({ error: 'Missing url' });
