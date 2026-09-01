@@ -4,6 +4,7 @@ import { searchOpportunities, filterAdultResults } from '../../lib/search';
 import { googleSearch } from '../../lib/google-search';
 import { logEvent, geoFromRequest } from '../../lib/analytics';
 import { extractAge } from '../../lib/age.mjs';
+import { enforceRateLimit, clientIp, LIMITS } from '../../lib/rate-limit';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, maxRetries: 3 });
 
@@ -250,6 +251,28 @@ export default async function handler(req, res) {
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'messages array is required' });
   }
+
+  // Rate limiting, before any model call and before switching to SSE.
+  // Embed keys are necessarily public — they sit in the page source of every
+  // host site — so the key alone cannot be treated as authorisation. Two
+  // limits: per-visitor to stop one person hammering it, and per-key per-day
+  // to bound total spend if a key is scraped and replayed.
+  const ip = clientIp(req);
+  const perVisitorBlocked = await enforceRateLimit(req, res, {
+    scope: 'chat',
+    identifier: `${key}:${ip}`,
+    ...LIMITS.chat,
+    message: "Linkist is catching its breath 🙌 Give it a minute and try again!",
+  });
+  if (perVisitorBlocked) return;
+
+  const perKeyBlocked = await enforceRateLimit(req, res, {
+    scope: 'chat-daily',
+    identifier: key,
+    ...LIMITS.chatDaily,
+    message: "Linkist has hit today's limit for this site. Please try again tomorrow!",
+  });
+  if (perKeyBlocked) return;
 
   // Log chat session start and first query on the user's first message
   // Awaited before the SSE stream opens — an un-awaited write here is lost

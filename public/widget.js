@@ -209,6 +209,18 @@
         body: JSON.stringify({ key: API_KEY, messages: messages }),
       })
         .then(function (response) {
+          // 429 = rate limited. Show what the server said rather than the
+          // generic failure message, so the user knows to simply wait.
+          if (response.status === 429) {
+            return response.json().catch(function () { return {}; }).then(function (body) {
+              hideTypingIndicator();
+              appendErrorMessage(body.error || 'Too many messages just now — give it a minute and try again.');
+              messages.pop();
+              isLoading = false;
+              sendBtn.disabled = false;
+              throw new Error('rate limited');
+            });
+          }
           if (!response.ok) throw new Error('Chat request failed (' + response.status + ')');
           hideTypingIndicator();
 
@@ -424,6 +436,9 @@
           readChunk();
         })
         .catch(function (err) {
+          // The rate-limit branch already rendered its own message and reset
+          // state; don't stack a generic error on top of it.
+          if (err && err.message === 'rate limited') return;
           hideTypingIndicator();
           appendErrorMessage();
           console.error('[Changeist]', err);
@@ -462,10 +477,10 @@
       scrollMsgToTop(el);
     }
 
-    function appendErrorMessage() {
+    function appendErrorMessage(text) {
       var el = document.createElement('div');
       el.className = 'cg-msg cg-msg--error';
-      el.textContent = 'Something went wrong. Please try again.';
+      el.textContent = text || 'Something went wrong. Please try again.';
       messagesEl.appendChild(el);
       scrollToBottom();
     }

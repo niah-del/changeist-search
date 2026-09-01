@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { supabase } from '../../lib/supabase';
+import { enforceRateLimit, clientIp, LIMITS } from '../../lib/rate-limit';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -20,6 +21,12 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
   try {
+  // Generates a document with an Opus call — the most expensive endpoint here.
+  if (await enforceRateLimit(req, res, {
+    scope: 'export', identifier: clientIp(req), ...LIMITS.export,
+    message: 'You have generated a lot of reports just now. Please wait a little while before making another.',
+  })) return;
+
   const { key, messages } = req.body;
   if (!key || !messages || messages.length === 0) {
     return res.status(400).json({ error: 'Missing key or messages.' });

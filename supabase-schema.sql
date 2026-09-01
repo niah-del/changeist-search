@@ -142,6 +142,67 @@ create policy "service only" on embed_keys for all using (false);
 
 
 -- ============================================================
+-- rate_limits
+-- Fixed-window request counters. Serverless functions share no memory, so the
+-- counter has to live somewhere both of them can see; Postgres is already here.
+-- Rows are short-lived and cleaned up opportunistically.
+-- ============================================================
+create table if not exists rate_limits (
+  id         text primary key,      -- "<scope>:<identifier>"
+  count      integer not null default 0,
+  expires_at timestamptz not null
+);
+
+create index if not exists rate_limits_expires on rate_limits (expires_at);
+
+alter table rate_limits enable row level security;
+create policy "service only" on rate_limits for all using (false);
+
+-- Atomically increment a window's counter and report whether the caller is
+-- over the limit. Doing this in one statement matters: a read-then-write from
+-- the application would let concurrent requests race past the limit.
+create or replace function check_rate_limit(
+  p_key            text,
+  p_limit          integer,
+  p_window_seconds integer
+) returns jsonb
+language plpgsql
+as $$
+declare
+  v_now     timestamptz := now();
+  v_count   integer;
+  v_expires timestamptz;
+begin
+  -- Opportunistic cleanup: sweeping on ~1% of calls keeps the table small
+  -- without paying for a delete on every single request.
+  if random() < 0.01 then
+    delete from rate_limits where expires_at < v_now;
+  end if;
+
+  insert into rate_limits (id, count, expires_at)
+  values (p_key, 1, v_now + make_interval(secs => p_window_seconds))
+  on conflict (id) do update set
+    count = case
+      when rate_limits.expires_at < v_now then 1
+      else rate_limits.count + 1
+    end,
+    expires_at = case
+      when rate_limits.expires_at < v_now then v_now + make_interval(secs => p_window_seconds)
+      else rate_limits.expires_at
+    end
+  returning count, expires_at into v_count, v_expires;
+
+  return jsonb_build_object(
+    'allowed',     v_count <= p_limit,
+    'count',       v_count,
+    'limit',       p_limit,
+    'retry_after', greatest(1, ceil(extract(epoch from (v_expires - v_now))))::int
+  );
+end;
+$$;
+
+
+-- ============================================================
 -- Migrations for databases created before this file was updated
 -- Safe to re-run. New projects can skip this block — the definitions
 -- above already include these changes.

@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase';
+import { enforceRateLimit, clientIp, LIMITS } from '../../lib/rate-limit';
 
 // Parses "16", "13-18", "13–18", "13 to 18" → { age_min, age_max }
 function parseAgeRequirement(value) {
@@ -36,6 +37,11 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
+
+  // Same reasoning as /api/analytics: bound secret-guessing attempts.
+  if (await enforceRateLimit(req, res, {
+    scope: 'admin', identifier: clientIp(req), ...LIMITS.admin,
+  })) return;
 
   if (!isAuthorized(req)) {
     return res.status(401).json({ error: 'Unauthorized' });

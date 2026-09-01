@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase';
+import { enforceRateLimit, clientIp, LIMITS } from '../../lib/rate-limit';
 
 /**
  * GET /api/analytics?secret=<ADMIN_SECRET>
@@ -6,6 +7,12 @@ import { supabase } from '../../lib/supabase';
  */
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+
+  // The admin secret travels in the query string, so guessing attempts are
+  // cheap and leave no trace beyond access logs. Cap them.
+  if (await enforceRateLimit(req, res, {
+    scope: 'admin', identifier: clientIp(req), ...LIMITS.admin,
+  })) return;
 
   const secret = req.query.secret || (req.headers.authorization || '').replace('Bearer ', '');
   if (!secret || secret !== process.env.ADMIN_SECRET) {

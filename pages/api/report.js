@@ -1,5 +1,6 @@
 import { supabase } from '../../lib/supabase';
 import { geoFromRequest } from '../../lib/analytics';
+import { enforceRateLimit, clientIp, LIMITS } from '../../lib/rate-limit';
 
 /**
  * POST /api/report
@@ -9,6 +10,10 @@ import { geoFromRequest } from '../../lib/analytics';
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  if (await enforceRateLimit(req, res, {
+    scope: 'report', identifier: clientIp(req), ...LIMITS.report,
+  })) return;
 
   const { key, user_message, assistant_message } = req.body || {};
   if (!key) return res.status(401).json({ error: 'Missing API key' });
