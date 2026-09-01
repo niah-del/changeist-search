@@ -51,7 +51,7 @@ export default async function handler(req, res) {
 
   const results = await searchOpportunities({ query: q.trim(), type: type || '', location: location || '' });
 
-  logEvent('search', {
+  await logEvent('search', {
     query: q.trim(),
     result_count: results.length,
     opportunity_type: type || null,

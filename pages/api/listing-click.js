@@ -76,14 +76,15 @@ export default async function handler(req, res) {
 
   if (!listingId) return res.status(200).json({ ok: true }); // not a tracked listing
 
-  supabase.from('listing_events').insert({
+  // Awaited — the function is frozen once the response is sent, so an
+  // un-awaited insert loses an unpredictable share of clicks.
+  const { error } = await supabase.from('listing_events').insert({
     listing_id: listingId,
     event_type: 'click',
     query: query || null,
     embed_key_id: embedKeyId,
-  }).then(({ error }) => {
-    if (error) console.error('[listing-click]', error);
   });
+  if (error) console.error('[listing-click]', error);
 
   return res.status(200).json({ ok: true });
 }

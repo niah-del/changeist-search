@@ -17,7 +17,7 @@ create table if not exists listings (
   title        text not null,
   organization text not null,
   description  text,
-  type         text check (type in ('job', 'volunteer', 'internship', 'event')),
+  type         text check (type in ('job', 'volunteer', 'internship', 'event', 'scholarship')),
   location     text,                       -- e.g. "New York, NY" or "Remote"
   url          text,                       -- link to apply / learn more
   priority     integer not null default 0, -- 0 = internal Changeist, 1 = sponsored
@@ -86,6 +86,28 @@ create policy "service only" on search_events for all using (false);
 
 
 -- ============================================================
+-- listing_events
+-- Per-listing impression and click tracking, written by lib/search.js
+-- (impressions) and /api/listing-click (clicks).
+-- ============================================================
+create table if not exists listing_events (
+  id           uuid primary key default uuid_generate_v4(),
+  listing_id   uuid references listings(id) on delete cascade,
+  event_type   text not null,       -- 'impression' | 'click'
+  query        text,                -- the search that surfaced the listing
+  embed_key_id uuid references embed_keys(id),
+  created_at   timestamptz not null default now()
+);
+
+-- Index for per-listing rollups and time-based queries
+create index if not exists listing_events_listing on listing_events (listing_id, event_type);
+create index if not exists listing_events_created on listing_events (created_at desc);
+
+alter table listing_events enable row level security;
+create policy "service only" on listing_events for all using (false);
+
+
+-- ============================================================
 -- reports
 -- Flagged responses submitted by users via the Report button.
 -- ============================================================
@@ -117,6 +139,18 @@ alter table embed_keys enable row level security;
 -- Only service role (your backend) can read/write
 create policy "service only" on listings   for all using (false);
 create policy "service only" on embed_keys for all using (false);
+
+
+-- ============================================================
+-- Migrations for databases created before this file was updated
+-- Safe to re-run. New projects can skip this block — the definitions
+-- above already include these changes.
+-- ============================================================
+
+-- Allow 'scholarship' as a listing type (the chat tool already accepts it)
+alter table listings drop constraint if exists listings_type_check;
+alter table listings add constraint listings_type_check
+  check (type in ('job', 'volunteer', 'internship', 'event', 'scholarship'));
 
 
 -- ============================================================
